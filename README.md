@@ -1,2 +1,6 @@
-* Initiate babel
-```npm install --save-dev babel-cli babel-preset-env```
+```
+git clone https://github.com/arnaudmolo/data-cours
+cd data-cours
+npm install
+npm start
+```
