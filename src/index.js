@@ -11,13 +11,10 @@ const margins = {
   left: 20,
   right: 20
 }
-const peoplePerPixel = 100000
 const $pixelRatio = document.querySelector('#ppx')
 const $popupContainer = document.querySelector('#content')
 const $levelFilter = document.querySelector('#filter')
 const $townFilter = document.querySelector('#town')
-
-$pixelRatio.value = peoplePerPixel
 
 const svg = d3.select('body').append('svg')
   .attr('width',  outerWidth)
@@ -46,9 +43,8 @@ function renderCreator(xCol, yCol, radiusCol, peoplePerPixel, data) {
   const y = R.compose(yScale, yCol)
   const r = R.compose(rScale, radiusCol)
   const fill = R.compose(colorScale, radiusCol)
-  console.log('renderCreator')
-  console.log('peoplePerPixel')
   const radiusDataExtent = d3.extent(data, radiusCol)
+
   xScale.domain(d3.extent(data, xCol))
   yScale.domain(d3.extent(data, yCol))
   rScale.domain(radiusDataExtent)
@@ -61,7 +57,6 @@ function renderCreator(xCol, yCol, radiusCol, peoplePerPixel, data) {
   rScale.range([rMin, rMax])
 
   const circles = svg.selectAll('circle').data(data)
-  console.log(data)
 
   circles
     .enter()
@@ -88,36 +83,31 @@ const type = d => ({
 })
 
 d3.csv('public/countries_population.csv', type, data => {
-  const longitudeAccessor = R.prop('longitude')
-  const latitudeAccessor = R.prop('latitude')
-  const populationAccessot = R.prop('population')
-  const render = renderCreator(
-    longitudeAccessor,
-    latitudeAccessor,
-    populationAccessot
+  $pixelRatio.value = 100000
+  const render = R.curry(renderCreator)(
+    R.prop('longitude'),
+    R.prop('latitude'),
+    R.prop('population')
   )
   render(
-    peoplePerPixel,
+    $pixelRatio.value,
     data
   )
   $pixelRatio.addEventListener('change', (event) => {
+    peoplePerPixel = event.target.value
     render(
-      +event.target.value,
+      $pixelRatio.value,
       data
     )
   })
-  $levelFilter.addEventListener('change', event => {
-      render(
-        peoplePerPixel,
-        data.filter(d => d.population > event.target.value)
-      )
-    })
-  $townFilter.addEventListener('change', event => {
-      render(
-        peoplePerPixel,
-        data.filter(d =>
-          d.label.slice(0, event.target.value.length) === event.target.value
-        )
-      )
-    })
+  $levelFilter.addEventListener('change', event => render(
+    $pixelRatio.value,
+    data.filter(d => d.population > event.target.value)
+  ))
+  $townFilter.addEventListener('change', event => render(
+    $pixelRatio.value,
+    data.filter(d =>
+      d.label.slice(0, event.target.value.length) === event.target.value
+    )
+  ))
 })
