@@ -1,5 +1,7 @@
 import './styles.css'
 import * as d3 from 'd3'
+import * as R from 'ramda'
+
 const outerWidth = 400
 const outerHeight = 250
 const radius = 2
@@ -10,96 +12,111 @@ const margins = {
   right: 20
 }
 const peoplePerPixel = 100000
-const input = document.querySelector('#ppx')
-input.value = peoplePerPixel
-const content = document.querySelector('#content')
+const $pixelRatio = document.querySelector('#ppx')
+const $popupContainer = document.querySelector('#content')
+const $levelFilter = document.querySelector('#filter')
+const $townFilter = document.querySelector('#town')
+
+$pixelRatio.value = peoplePerPixel
 
 const svg = d3.select('body').append('svg')
-        .attr('width',  outerWidth)
-        .attr('height', outerHeight)
+  .attr('width',  outerWidth)
+  .attr('height', outerHeight)
 
 const xScale = d3.scaleLinear()
   .range([margins.left, outerWidth - margins.right])
 const yScale = d3.scaleLinear()
   .range([outerHeight - margins.top, margins.bottom])
 const rScale = d3.scaleSqrt()
+const colorScale = d3.scaleLinear().range(['red', 'blue'])
 
-function render(xCol, yCol, radiusCol, peoplePerPixel){
-  return function (data)  {
-    xScale.domain(d3.extent(data, d => d[xCol]))
-    yScale.domain(d3.extent(data, d => d[yCol]))
-    rScale.domain(d3.extent(data, d => d[radiusCol]))
-    const peopleMax = rScale.domain()[1]
-    const rMin = 0
-    const rMax = Math.sqrt(
-      peopleMax / (peoplePerPixel * Math.PI)
-    )
-    rScale.range([rMin, rMax])
+const popupCreator = d =>
+`Town: ${d.label},
+Population: ${d.population},
+lat: ${d.latitude},
+long: ${d.longitude}`
 
-    const circles = svg.selectAll('circle').data(data)
-    circles
-      .enter()
-      .append('circle')
-      .attr('cx', d => xScale(d[xCol]))
-      .attr('cy', d => yScale(d[yCol]))
-      .attr('r', d => rScale(d[radiusCol]))
-      .on('mouseover', d => {
-        content.innerText = `Town: ${d.label},
-        Population: ${d.population},
-        lat: ${d.latitude},
-        long: ${d.longitude}`
-        content.style.transform = `translate(${xScale(d[xCol])}px, ${yScale(d[yCol])}px)`
-      })
-
-    circles
-      .exit()
-      .transition()
-      .duration(2000)
-      .attr('r', 0)
-      .remove()
-  }
+const renderPopup = d => {
+  $popupContainer.innerText = popupCreator(d)
+  $popupContainer.style.transform = `translate(${x(d)}px, ${y(d)}px)`
 }
 
-function type(d){
-  return {
-    population: parseInt(d.population),
-    latitude: parseFloat(d.latitude),
-    longitude: +d.longitude,
-    label: d.name
-  }
+function render(data, xCol, yCol, radiusCol, peoplePerPixel){
+  const xa = R.prop(xCol)
+  const ya = R.prop(yCol)
+  const ra = R.prop(radiusCol)
+  const x = R.compose(xScale, xa)
+  const y = R.compose(yScale, ya)
+  const r = R.compose(rScale, ra)
+  const fill = R.compose(colorScale, ra)
+  const radiusDataExtent = d3.extent(data, ra)
+
+  xScale.domain(d3.extent(data, xa))
+  yScale.domain(d3.extent(data, ya))
+  rScale.domain(radiusDataExtent)
+  colorScale.domain(radiusDataExtent)
+  const peopleMax = rScale.domain()[1]
+  const rMin = 0
+  const rMax = Math.sqrt(
+    peopleMax / (peoplePerPixel * Math.PI)
+  )
+  rScale.range([rMin, rMax])
+
+  const circles = svg.selectAll('circle').data(data)
+
+  circles
+    .enter()
+    .append('circle')
+    .attr('cx', x)
+    .attr('cy', y)
+    .attr('r', r)
+    .attr('fill', fill)
+    .on('mouseover', renderPopup)
+
+  circles
+    .exit()
+    .transition()
+    .duration(2000)
+    .attr('r', 0)
+    .remove()
 }
+
+const type = d => ({
+  population: parseInt(d.population),
+  latitude: parseFloat(d.latitude),
+  longitude: +d.longitude,
+  label: d.name
+})
 
 d3.csv('public/countries_population.csv', type, data => {
-  render('longitude', 'latitude', 'population', peoplePerPixel)(data)
-  input.addEventListener('change', () => {
-    const renderVraiment = render(
+  render(data, 'longitude', 'latitude', 'population', peoplePerPixel)
+  $pixelRatio.addEventListener('change', () => {
+    render(
+      data,
       'longitude',
       'latitude',
       'population',
       +input.value
     )
-    renderVraiment(data)
   })
-
-  document
-    .querySelector('#filter')
-    .addEventListener('change', function (event) {
+  $levelFilter.addEventListener('change', event => {
       render(
+        data.filter(d => d.population > event.target.value),
         'longitude',
         'latitude',
         'population',
         peoplePerPixel
-      )(data.filter(d => d.population > event.target.value))
+      )
     })
-    document.querySelector('#town').addEventListener('change', e => {
-      const newData = data.filter(d => {
-        return d.label.slice(0, e.target.value.length) === e.target.value
-      })
+  $townFilter.addEventListener('change', event => {
       render(
+        data.filter(d =>
+          d.label.slice(0, event.target.value.length) === event.target.value
+        ),
         'longitude',
         'latitude',
         'population',
         peoplePerPixel
-      )(newData)
+      )
     })
 })
