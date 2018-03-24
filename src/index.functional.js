@@ -36,47 +36,49 @@ Population: ${d.population},
 lat: ${d.latitude},
 long: ${d.longitude}`
 
-const renderPopup = (x, y) => d => {
+const renderPopup = d => {
   $popupContainer.innerText = popupCreator(d)
   $popupContainer.style.transform = `translate(${x(d)}px, ${y(d)}px)`
 }
 
-function preRender(data, xCol, yCol, radiusCol, peoplePerPixel) {
-  const x = R.compose(xScale, xCol)
-  const y = R.compose(yScale, yCol)
-  const r = R.compose(rScale, radiusCol)
-  const fill = R.compose(colorScale, radiusCol)
-  return function render (data) {
-    const radiusDataExtent = d3.extent(data, radiusCol)
-    xScale.domain(d3.extent(data, xCol))
-    yScale.domain(d3.extent(data, yCol))
-    rScale.domain(radiusDataExtent)
-    colorScale.domain(radiusDataExtent)
-    const peopleMax = rScale.domain()[1]
-    const rMin = 0
-    const rMax = Math.sqrt(
-      peopleMax / (peoplePerPixel * Math.PI)
-    )
-    rScale.range([rMin, rMax])
+function render(data, xCol, yCol, radiusCol, peoplePerPixel){
+  const xa = R.prop(xCol)
+  const ya = R.prop(yCol)
+  const ra = R.prop(radiusCol)
+  const x = R.compose(xScale, xa)
+  const y = R.compose(yScale, ya)
+  const r = R.compose(rScale, ra)
+  const fill = R.compose(colorScale, ra)
+  const radiusDataExtent = d3.extent(data, ra)
 
-    const circles = svg.selectAll('circle').data(data)
+  xScale.domain(d3.extent(data, xa))
+  yScale.domain(d3.extent(data, ya))
+  rScale.domain(radiusDataExtent)
+  colorScale.domain(radiusDataExtent)
+  const peopleMax = rScale.domain()[1]
+  const rMin = 0
+  const rMax = Math.sqrt(
+    peopleMax / (peoplePerPixel * Math.PI)
+  )
+  rScale.range([rMin, rMax])
 
-    circles
-      .enter()
-      .append('circle')
-      .attr('cx', x)
-      .attr('cy', y)
-      .attr('r', r)
-      .attr('fill', fill)
-      .on('mouseover', renderPopup(x, y))
+  const circles = svg.selectAll('circle').data(data)
 
-    circles
-      .exit()
-      .transition()
-      .duration(2000)
-      .attr('r', 0)
-      .remove()
-  }
+  circles
+    .enter()
+    .append('circle')
+    .attr('cx', x)
+    .attr('cy', y)
+    .attr('r', r)
+    .attr('fill', fill)
+    .on('mouseover', renderPopup)
+
+  circles
+    .exit()
+    .transition()
+    .duration(2000)
+    .attr('r', 0)
+    .remove()
 }
 
 const type = d => ({
@@ -87,39 +89,22 @@ const type = d => ({
 })
 
 d3.csv('public/countries_population.csv', type, data => {
-  const longitudeAccessor = R.prop('longitude')
-  const latitudeAccessor = R.prop('latitude')
-  const populationAccessot = R.prop('population')
-
-  const render = renderCreator(
-    data,
-    longitudeAccessor,
-    latitudeAccessor,
-    populationAccessot,
-    peoplePerPixel
-  )
-  render(
-    data,
-    longitudeAccessor,
-    latitudeAccessor,
-    populationAccessot,
-    peoplePerPixel
-  )
+  render(data, 'longitude', 'latitude', 'population', peoplePerPixel)
   $pixelRatio.addEventListener('change', () => {
     render(
       data,
-      longitudeAccessor,
-      latitudeAccessor,
-      populationAccessot,
+      'longitude',
+      'latitude',
+      'population',
       +input.value
     )
   })
   $levelFilter.addEventListener('change', event => {
       render(
         data.filter(d => d.population > event.target.value),
-        longitudeAccessor,
-        latitudeAccessor,
-        populationAccessot,
+        'longitude',
+        'latitude',
+        'population',
         peoplePerPixel
       )
     })
@@ -128,9 +113,9 @@ d3.csv('public/countries_population.csv', type, data => {
         data.filter(d =>
           d.label.slice(0, event.target.value.length) === event.target.value
         ),
-        longitudeAccessor,
-        latitudeAccessor,
-        populationAccessot,
+        'longitude',
+        'latitude',
+        'population',
         peoplePerPixel
       )
     })
