@@ -1,6 +1,7 @@
 svg {
   border: 5px solid red;
 }
+
 #content {
   position: absolute;
   background-color: cyan;
@@ -8,6 +9,20 @@ svg {
   transition: transform 0.4s ease;
   pointer-events: none;
 }
+
 .content-container {
   position: relative;
+}
+
+.popup-container {
+  pointer-events: none;
+}
+
+.popup-background {
+  fill: #efefef;
+  box-shadow: 25px 25px 25px 25px black;
+}
+
+.popup-container text {
+  font-family: 'Helvetica', sans-serif;
 }
