@@ -10,8 +10,9 @@ const margins = {
   left: 20,
   right: 20
 }
+const $popupContainer = document.querySelector('#content')
 
-const translate = (x, y) => `translate(${x}, ${y})`
+const translate = (x, y) => `translate(${x}px, ${y}px)`
 
 const svg = d3.select('body').append('svg')
   .attr('width',  outerWidth)
@@ -22,70 +23,30 @@ const yScale = d3.scaleLinear()
   .range([outerHeight - margins.top, margins.bottom])
 const rScale = d3.scaleSqrt()
 const colorScale = d3.scaleLinear().range(['red', 'blue'])
-
-const renderPopup = (x, y, container) => (data) => {
-  const bar = container.selectAll('g').data(data)
-  const createText = text => s => s
-    .append('text')
-    .attr('dy', '.35em')
+const createText = text => selection =>
+  selection
+    .append('p')
     .text(text)
     .attr('opacity', 0)
     .transition()
     .attr('opacity', 1)
 
+const renderPopup = (x, y, container) => (data) => {
+  const bar = container.selectAll('div').data(data)
   bar
     .enter()
-    .append('g')
+    .append('div')
     .attr('class', 'popup-container')
-    .attr('transform', d => translate(x(d), y(d)))
+    .style('transform', d => translate(x(d), y(d)))
     .each(function (d) {
       const innerBar = d3.select(this)
-      const rect = innerBar
-        .append('rect')
-        .attr('class', 'popup-background')
-        .attr('height', 0)
-        .attr('rx', 5)
-        .attr('ry', 5)
-      const textGroup = innerBar.append('g')
-      textGroup.call(createText(d => d.label))
-      textGroup.call(createText(d => d.population))
-      .attr('x', 20)
-      const bbox = textGroup.node().getBoundingClientRect()
-      textGroup.attr('transform', translate(- bbox.width / 2, bbox.height / 2))
-      const rectWidth = bbox.width + 20
-      rect
-        .attr('width', rectWidth)
-        .attr('x', - rectWidth / 2)
-        .transition()
-        .attr('height', bbox.height + 20)
+      innerBar.call(createText(d => d.label))
+      const format = d3.formatPrefix(`.${d3.precisionPrefix(1e5, 1.3e6)}`, 3e6)
+      console.log(innerBar.call(createText(d => format(d.population))))
     })
     bar
       .exit()
       .remove()
-}
-
-function wrap(text, width) {
-  text.each(function () {
-    const text = d3.select(this)
-    const words = text.text().split(/\s+/).reverse()
-    let word
-    let line = []
-    let lineNumber = 0
-    const lineHeight = 1.1 // em
-    const y = text.attr('y')
-    const dy = parseFloat(text.attr('dy'))
-    let tspan = text.text(null).append('tspan').attr('x', 0).attr('y', y).attr('dy', dy + 'em')
-    while (word = words.pop()) {
-      line.push(word)
-      tspan.text(line.join(' '))
-      if (tspan.node().getComputedTextLength() > width) {
-        line.pop()
-        tspan.text(line.join(' '))
-        line = [word]
-        tspan = text.append('tspan').attr('x', 0).attr('y', y).attr('dy', ++lineNumber * lineHeight + dy + 'em').text(word)
-      }
-    }
-  })
 }
 
 export function render(xCol, yCol, radiusCol, peoplePerPixel, data) {
@@ -105,7 +66,7 @@ export function render(xCol, yCol, radiusCol, peoplePerPixel, data) {
   const markG = svg.append('g')
   const circles = circlesGroup.selectAll('circle').data(data)
 
-  svg.call(d3.zoom().on('zoom', d =>
+  svg.call(d3.zoom().on('zoom', _ =>
     circlesGroup.attr('transform', d3.event.transform)
   ))
 
@@ -125,12 +86,12 @@ export function render(xCol, yCol, radiusCol, peoplePerPixel, data) {
       renderPopup(
         _ => d3.event.pageX - bbox.x,
         _ => d3.event.pageY - bbox.y,
-        markG
+        d3.select($popupContainer)
       )([d])
     })
     .on('mouseleave', function (d) {
       d3.select(this).transition().duration(100).attr('r', r)
-      return renderPopup(x, y, markG)([])
+      return renderPopup(x, y, d3.select($popupContainer))([])
     })
 
   circles

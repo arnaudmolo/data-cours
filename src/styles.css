@@ -4,9 +4,6 @@ svg {
 
 #content {
   position: absolute;
-  background-color: cyan;
-  min-height: 25px;
-  transition: transform 0.4s ease;
   pointer-events: none;
 }
 
@@ -16,11 +13,9 @@ svg {
 
 .popup-container {
   pointer-events: none;
-}
-
-.popup-background {
-  fill: #efefef;
-  box-shadow: 25px 25px 25px 25px black;
+  background-color: #efefef;
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3),
+    0px 10px 25px 5px rgba(0, 0, 0, 0.1);
 }
 
 .popup-container text {

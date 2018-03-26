@@ -5,7 +5,6 @@ import { transform as d3transform } from 'd3-transform'
 
 import { render } from './View'
 const $pixelRatio = document.querySelector('#ppx')
-const $popupContainer = document.querySelector('#content')
 const $levelFilter = document.querySelector('#filter')
 const $townFilter = document.querySelector('#town')
 
@@ -15,7 +14,10 @@ const type = d => ({
   longitude: +d.longitude,
   label: d.name
 })
-
+d3.json("https://unpkg.com/d3-format@1/locale/fr-FR.json", function(error, locale) {
+if (error) throw error
+  d3.formatDefaultLocale(locale)
+})
 d3.csv('public/countries_population.csv', type, data => {
   $pixelRatio.value = 100000
   const toRender = R.curry(render)(
