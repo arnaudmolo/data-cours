@@ -9,11 +9,10 @@ const $levelFilter = document.querySelector('#filter')
 const $townFilter = document.querySelector('#town')
 
 const type = d => {
-  // console.log(d)
   return {
     createdAt: new Date(d.createdAt),
     latLng: d.latLng,
-    label: 'ici'
+    label: d.city || 'unknow city'
   }
 }
 
@@ -34,7 +33,7 @@ const reducer = (data) => {
     const val = $townFilter.value
     result = result.filter(d => d.label.slice(0, val.length) === val)
   }
-  if ($levelFilter.value) {
+  if ($levelFilter.value > 0) {
     const val = $levelFilter.value
     result = result.filter(d => d.population > val)
   }
@@ -45,7 +44,6 @@ const reducer = (data) => {
 d3.json('public/geolocs.json', data => {
   // Set default values.
   data = data.map(type)
-  console.log(data)
   $pixelRatio.value = 100000
   $levelFilter.value = 0
   $townFilter.value = ''
@@ -82,7 +80,7 @@ d3.json('public/geolocs.json', data => {
   // Need to fix the rScale domain on a fix point.
   // We don't want the representation to change depending on data.
   rScale.domain(radiusDataExtent).range([
-    0, Math.sqrt(radiusDataExtent[1] / ($pixelRatio.value * Math.PI))
+    5, 5
   ])
   colorScale.domain(radiusDataExtent)
 
@@ -94,8 +92,8 @@ d3.json('public/geolocs.json', data => {
     // Equivalent to : d => xScale(xCol(d))
     R.compose(xScale, xCol),
     R.compose(yScale, yCol),
-    R.compose(rScale, rCol),
-    R.compose(colorScale, rCol)
+    e => 2,
+    R.compose(colorScale, xCol)
   )
   toRender(reducer(data))
   $pixelRatio.addEventListener('change', _ => {

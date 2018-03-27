@@ -73,7 +73,6 @@ export function render(x, y, r, fill, data) {
   circles
     .enter()
     .append('circle')
-    .attr('id', d => d.label)
     .attr('cx', x)
     .attr('cy', y)
     .attr('fill', fill)

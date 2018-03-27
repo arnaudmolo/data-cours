@@ -68,15 +68,25 @@ const filtersMap = {
   }
 }
 
-const geoloc = async e =>
+const geoByIp = async d =>
   new Promise((resolve, reject) =>
-    where.is(e.ip, (err, result) => {
+    where.is(d.ip, (err, result) => {
       if (err) {
         console.log(err)
       }
-      return err ? reject(err) : resolve([result.get('lat'), result.get('lng')])
+      return err ? reject(err) : resolve(result)
     })
   )
+
+const geoByLngLat = async d =>
+  new Promise((resolve, reject) => {
+    request(
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${d.latLng.toString()}&sensor=true`,
+      (err, res, html) => {
+        console.log(res.toJSON())
+      }
+    )
+  })
 
 const scrap = async () => {
   request('http://localhost:8080/public/fb-data/html/security.htm', async (err, response, html) => {
@@ -97,10 +107,12 @@ const scrap = async () => {
         return previous.concat(content.map(async e => {
           if (e.ip) {
             try {
-              const latLng = await geoloc(e)
+              const whereIs = await geoByIp(e)
+              const latLng = [whereIs.get('lat'), whereIs.get('lng')]
               return {
                 ...e,
-                latLng
+                latLng,
+                city: whereIs.get('city')
               }
             } catch (e) {
               throw e
