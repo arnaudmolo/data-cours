@@ -1,105 +1,104 @@
 import './styles.css'
 import * as d3 from 'd3'
-const outerWidth = 400
-const outerHeight = 250
-const radius = 2
-const margins = {
-  top: 20,
-  bottom: 20,
-  left: 20,
-  right: 20
-}
-const peoplePerPixel = 100000
-const input = document.querySelector('#ppx')
-input.value = peoplePerPixel
-const content = document.querySelector('#content')
+import * as R from 'ramda'
 
-const svg = d3.select('body').append('svg')
-        .attr('width',  outerWidth)
-        .attr('height', outerHeight)
+import { render } from './View'
 
-const xScale = d3.scaleLinear()
-  .range([margins.left, outerWidth - margins.right])
-const yScale = d3.scaleLinear()
-  .range([outerHeight - margins.top, margins.bottom])
-const rScale = d3.scaleSqrt()
+const $pixelRatio = document.querySelector('#ppx')
+const $levelFilter = document.querySelector('#filter')
+const $townFilter = document.querySelector('#town')
 
-function render(xCol, yCol, radiusCol, peoplePerPixel){
-  return function (data)  {
-    xScale.domain(d3.extent(data, d => d[xCol]))
-    yScale.domain(d3.extent(data, d => d[yCol]))
-    rScale.domain(d3.extent(data, d => d[radiusCol]))
-    const peopleMax = rScale.domain()[1]
-    const rMin = 0
-    const rMax = Math.sqrt(
-      peopleMax / (peoplePerPixel * Math.PI)
-    )
-    rScale.range([rMin, rMax])
+const type = d => ({
+  population: parseInt(d.population),
+  latitude: parseFloat(d.latitude),
+  longitude: +d.longitude,
+  label: d.name
+})
 
-    const circles = svg.selectAll('circle').data(data)
-    circles
-      .enter()
-      .append('circle')
-      .attr('cx', d => xScale(d[xCol]))
-      .attr('cy', d => yScale(d[yCol]))
-      .attr('r', d => rScale(d[radiusCol]))
-      .on('mouseover', d => {
-        content.innerText = `Town: ${d.label},
-        Population: ${d.population},
-        lat: ${d.latitude},
-        long: ${d.longitude}`
-        content.style.transform = `translate(${xScale(d[xCol])}px, ${yScale(d[yCol])}px)`
-      })
+d3.json('https://unpkg.com/d3-format@1/locale/fr-FR.json', function(error, locale) {
+  // Download french formats.
+  if (error) throw error
+    d3.formatDefaultLocale(locale)
+})
 
-    circles
-      .exit()
-      .transition()
-      .duration(2000)
-      .attr('r', 0)
-      .remove()
+const reducer = (data) => {
+  let result = data
+  if ($townFilter.value.length) {
+    const val = $townFilter.value
+    result = result.filter(d => d.label.slice(0, val.length) === val)
   }
-}
-
-function type(d){
-  return {
-    population: parseInt(d.population),
-    latitude: parseFloat(d.latitude),
-    longitude: +d.longitude,
-    label: d.name
+  if ($levelFilter.value) {
+    const val = $levelFilter.value
+    result = result.filter(d => d.population > val)
   }
+  return result
 }
 
+// Download the needed data.
 d3.csv('public/countries_population.csv', type, data => {
-  render('longitude', 'latitude', 'population', peoplePerPixel)(data)
-  input.addEventListener('change', () => {
-    const renderVraiment = render(
-      'longitude',
-      'latitude',
-      'population',
-      +input.value
-    )
-    renderVraiment(data)
-  })
+  // Set default values.
+  $pixelRatio.value = 100000
+  $levelFilter.value = 0
+  $townFilter.value = ''
 
-  document
-    .querySelector('#filter')
-    .addEventListener('change', function (event) {
-      render(
-        'longitude',
-        'latitude',
-        'population',
-        peoplePerPixel
-      )(data.filter(d => d.population > event.target.value))
-    })
-    document.querySelector('#town').addEventListener('change', e => {
-      const newData = data.filter(d => {
-        return d.label.slice(0, e.target.value.length) === e.target.value
-      })
-      render(
-        'longitude',
-        'latitude',
-        'population',
-        peoplePerPixel
-      )(newData)
-    })
+  const outerWidth = 800
+  const outerHeight = 500
+  const radius = 2
+  const margins = {
+    top: 20,
+    bottom: 20,
+    left: 20,
+    right: 20
+  }
+
+  // Scales.
+  const xScale = d3.scaleLinear()
+    .range([margins.left, outerWidth - margins.right])
+  const yScale = d3.scaleLinear()
+    .range([outerHeight - margins.top, margins.bottom])
+  const rScale = d3.scaleSqrt()
+
+  // Create accessors.
+  // http://ramdajs.com/docs/#prop
+  // Equivalent : d => d['longitude']
+  const xCol = R.prop('longitude')
+  const yCol = R.prop('latitude')
+  const rCol = R.prop('population')
+
+  const radiusDataExtent = d3.extent(data, rCol)
+
+  xScale.domain(d3.extent(data, xCol))
+  yScale.domain(d3.extent(data, yCol))
+  // Need to fix the rScale domain on a fix point.
+  // We don't want the representation to change depending on data.
+  rScale.domain(radiusDataExtent).range([
+    0, Math.sqrt(radiusDataExtent[1] / ($pixelRatio.value * Math.PI))
+  ])
+
+  // Currying the render function to avoid repetition:
+  // http://ramdajs.com/docs/#curry
+  // Equivalent : (x, y, z) => (data) =>
+  const toRender = R.curry(render)(
+    // Composition is cool. Seel http://ramdajs.com/docs/#compose
+    // Equivalent to : d => xScale(xCol(d))
+    R.compose(xScale, xCol),
+    R.compose(yScale, yCol),
+    R.compose(rScale, rCol)
+  )
+  toRender(reducer(data))
+  $pixelRatio.addEventListener('change', _ => {
+    if ($pixelRatio.value.length === 0) {
+      $pixelRatio.value = 100000
+    }
+    rScale.domain(radiusDataExtent).range([
+      0, Math.sqrt(radiusDataExtent[1] / ($pixelRatio.value * Math.PI))
+    ])
+    toRender(reducer(data))
+  })
+  $levelFilter.addEventListener('change', _ => toRender(
+    reducer(data)
+  ))
+  $townFilter.addEventListener('change', _ => toRender(
+    reducer(data)
+  ))
 })
