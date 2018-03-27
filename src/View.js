@@ -55,8 +55,8 @@ const createPopup = (x, y, container) => (data) => {
 // argument 1 (x): function that define the x position of each data.
 // argument 2 (y): function that define the y position of each data.
 // argument 3 (r): function that define the radius of each data.
-// argument 4 (data): data to build the visualisation
-// return : a function taking 1 argument (data) to build the popup.
+// argument 4 (data): data to build the visualisation.
+// return : circles d3 selection.
 export function render(x, y, r, data) {
   const circles = circlesGroup.selectAll('circle').data(data, r)
   circles
@@ -103,4 +103,6 @@ export function render(x, y, r, data) {
     .transition()
     .duration(2000)
     .attr('r', r)
+
+  return circles
 }

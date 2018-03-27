@@ -17,7 +17,7 @@ const type = d => ({
 })
 
 d3.json('https://unpkg.com/d3-format@1/locale/fr-FR.json', function(error, locale) {
-  // Download french formats
+  // Download french formats.
   if (error) throw error
     d3.formatDefaultLocale(locale)
 })
@@ -35,9 +35,9 @@ const reducer = (data) => {
   return result
 }
 
-// Download the needed data
+// Download the needed data.
 d3.csv('public/countries_population.csv', type, data => {
-  // set pixel ratio default value
+  // Set default values.
   $pixelRatio.value = 100000
   $levelFilter.value = 0
   $townFilter.value = ''
@@ -59,7 +59,7 @@ d3.csv('public/countries_population.csv', type, data => {
     .range([outerHeight - margins.top, margins.bottom])
   const rScale = d3.scaleSqrt()
 
-  // Create accessors
+  // Create accessors.
   // http://ramdajs.com/docs/#prop
   // Equivalent : d => d['longitude']
   const xCol = R.prop('longitude')
@@ -78,7 +78,7 @@ d3.csv('public/countries_population.csv', type, data => {
 
   // Currying the render function to avoid repetition:
   // http://ramdajs.com/docs/#curry
-  // Equivalent : (x, y, z) => (peoplePerPixel, data)
+  // Equivalent : (x, y, z) => (data) =>
   const toRender = R.curry(render)(
     // Composition is cool. Seel http://ramdajs.com/docs/#compose
     // Equivalent to : d => xScale(xCol(d))
