@@ -1,13 +1,23 @@
 svg {
   border: 5px solid red;
 }
+
 #content {
   position: absolute;
-  background-color: cyan;
-  min-height: 25px;
-  transition: transform 0.4s ease;
   pointer-events: none;
 }
+
 .content-container {
   position: relative;
+}
+
+.popup-container {
+  pointer-events: none;
+  background-color: #efefef;
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3),
+    0px 10px 25px 5px rgba(0, 0, 0, 0.1);
+}
+
+.popup-container text {
+  font-family: 'Helvetica', sans-serif;
 }
