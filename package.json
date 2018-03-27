@@ -22,6 +22,9 @@
     "d3": "^4.13.0",
     "d3-zoom": "^1.7.1",
     "lodash": "^4.17.5",
-    "ramda": "^0.25.0"
+    "ramda": "^0.25.0",
+    "express": "latest",
+    "request": "latest",
+    "cheerio": "latest"
   }
 }
