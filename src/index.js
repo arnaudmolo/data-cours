@@ -1,7 +1,6 @@
 import './styles.css'
 import * as d3 from 'd3'
 import * as R from 'ramda'
-import { transform as d3transform } from 'd3-transform'
 
 import { render } from './View'
 
