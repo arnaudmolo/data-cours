@@ -22,7 +22,7 @@ const xScale = d3.scaleLinear()
 const yScale = d3.scaleLinear()
   .range([outerHeight - margins.top, margins.bottom])
 const rScale = d3.scaleSqrt()
-const colorScale = d3.scaleLinear().range(['red', 'blue'])
+const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
 const createText = text => selection =>
   selection
     .append('p')
@@ -42,7 +42,7 @@ const renderPopup = (x, y, container) => (data) => {
       const innerBar = d3.select(this)
       innerBar.call(createText(d => d.label))
       const format = d3.formatPrefix(`.${d3.precisionPrefix(1e5, 1.3e6)}`, 3e6)
-      console.log(innerBar.call(createText(d => format(d.population))))
+      innerBar.call(createText(d => format(d.population)))
     })
     bar
       .exit()
@@ -83,9 +83,12 @@ export function render(xCol, yCol, radiusCol, peoplePerPixel, data) {
         .duration(100)
         .attr('r', d => r(d) * 2)
       const bbox = svg.node().getBoundingClientRect()
+      const doc = document.documentElement
+      const left = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0)
+      const top = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0)
       renderPopup(
-        _ => d3.event.pageX - bbox.x,
-        _ => d3.event.pageY - bbox.y,
+        _ => d3.event.pageX - bbox.x - left,
+        _ => d3.event.pageY - bbox.y - top,
         d3.select($popupContainer)
       )([d])
     })
