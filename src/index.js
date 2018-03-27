@@ -62,6 +62,7 @@ d3.csv('public/countries_population.csv', type, data => {
   const yScale = d3.scaleLinear()
     .range([outerHeight - margins.top, margins.bottom])
   const rScale = d3.scaleSqrt()
+  const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
 
   // Create accessors.
   // http://ramdajs.com/docs/#prop
@@ -79,6 +80,7 @@ d3.csv('public/countries_population.csv', type, data => {
   rScale.domain(radiusDataExtent).range([
     0, Math.sqrt(radiusDataExtent[1] / ($pixelRatio.value * Math.PI))
   ])
+  colorScale.domain(radiusDataExtent)
 
   // Currying the render function to avoid repetition:
   // http://ramdajs.com/docs/#curry
@@ -88,7 +90,8 @@ d3.csv('public/countries_population.csv', type, data => {
     // Equivalent to : d => xScale(xCol(d))
     R.compose(xScale, xCol),
     R.compose(yScale, yCol),
-    R.compose(rScale, rCol)
+    R.compose(rScale, rCol),
+    R.compose(colorScale, rCol)
   )
   toRender(reducer(data))
   $pixelRatio.addEventListener('change', _ => {

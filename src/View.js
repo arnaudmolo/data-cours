@@ -61,7 +61,7 @@ const createPopup = (x, y, container) => (data) => {
 // argument 3 (r): function that define the radius of each data.
 // argument 4 (data): data to build the visualisation.
 // return : circles d3 selection.
-export function render(x, y, r, data) {
+export function render(x, y, r, fill, data) {
   const circles = circlesGroup.selectAll('circle').data(data, r)
   circles
     .exit()
@@ -76,6 +76,7 @@ export function render(x, y, r, data) {
     .attr('id', d => d.label)
     .attr('cx', x)
     .attr('cy', y)
+    .attr('fill', fill)
     .attr('r', 0)
     .on('mouseenter', function (d) {
       // Apply a notable interaction.
