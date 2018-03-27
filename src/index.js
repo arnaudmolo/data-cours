@@ -17,13 +17,18 @@ const type = d => ({
 
 d3.json('https://unpkg.com/d3-format@1/locale/fr-FR.json', function(error, locale) {
   // Download french formats.
+  // Here to show syntax example. Don't do it.
   if (error) throw error
     d3.formatDefaultLocale(locale)
 })
 
+// Return different version of the data
+// depending on the state of the application.
 const reducer = (data) => {
   let result = data
   if ($townFilter.value.length) {
+    // DOM values can be slow to read,
+    // stocking it in a constant will improve performances.
     const val = $townFilter.value
     result = result.filter(d => d.label.slice(0, val.length) === val)
   }
