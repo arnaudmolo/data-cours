@@ -21,3 +21,7 @@ svg {
 .popup-container text {
   font-family: 'Helvetica', sans-serif;
 }
+
+.map {
+  fill: rgb(117, 87, 57);
+}

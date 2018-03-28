@@ -2,6 +2,8 @@ import './styles.css'
 import * as d3 from 'd3'
 import * as R from 'ramda'
 
+import * as cartho from 'd3-geo'
+
 import { render } from './View'
 
 const $pixelRatio = document.querySelector('#ppx')
@@ -40,10 +42,8 @@ const reducer = (data) => {
   return result
 }
 
-// Download the needed data.
-d3.json('public/geolocs.json', data => {
+const startup = async () => {
   // Set default values.
-  data = data.map(type)
   $pixelRatio.value = 100000
   $levelFilter.value = 0
   $townFilter.value = ''
@@ -59,43 +59,50 @@ d3.json('public/geolocs.json', data => {
   }
 
   // Scales.
-  const xScale = d3.scaleLinear()
-    .range([margins.left, outerWidth - margins.right])
-  const yScale = d3.scaleLinear()
-    .range([outerHeight - margins.top, margins.bottom])
-  const rScale = d3.scaleSqrt()
-  const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
-
-  // Create accessors.
-  // http://ramdajs.com/docs/#prop
-  // Equivalent : d => d['longitude']
-  const xCol = d => d.latLng[1]
-  const yCol = d => d.latLng[0]
-  const rCol = d => 10
-
-  const radiusDataExtent = d3.extent(data, rCol)
-
-  xScale.domain(d3.extent(data, xCol))
-  yScale.domain(d3.extent(data, yCol))
-  // Need to fix the rScale domain on a fix point.
-  // We don't want the representation to change depending on data.
-  rScale.domain(radiusDataExtent).range([
-    5, 5
-  ])
-  colorScale.domain(radiusDataExtent)
+  const geoProjection = cartho.geoOrthographic()
+    .translate([outerWidth / 2, outerHeight  / 2])
 
   // Currying the render function to avoid repetition:
   // http://ramdajs.com/docs/#curry
   // Equivalent : (x, y, z) => (data) =>
-  const toRender = R.curry(render)(
+  const toRender = render(
     // Composition is cool. Seel http://ramdajs.com/docs/#compose
     // Equivalent to : d => xScale(xCol(d))
-    R.compose(xScale, xCol),
-    R.compose(yScale, yCol),
-    e => 2,
-    R.compose(colorScale, xCol)
+    geoProjection,
+    e => 1,
+    await (
+      await window.fetch('/public/world.json')
+    ).json(),
   )
+
+  const data = (
+    await (
+      await window.fetch('public/geolocs.json')
+    ).json()
+  ).map(type).filter(e => e)
+
   toRender(reducer(data))
+
+  let m0
+  let o0
+  d3.select('svg')
+    .on('mousedown', d => {
+      m0 = [d3.event.pageX, d3.event.pageY]
+      o0 = geoProjection.rotate()
+      d3.event.preventDefault()
+    })
+    .on('mousemove', _ => {
+      if (m0) {
+        const m1 = [d3.event.pageX, d3.event.pageY]
+        const o1 = [o0[0] + (m1[0] - m0[0]) / 6, o0[1] + (m0[1] - m1[1]) / 6]
+        o1[1] = o1[1] > 30  ? 30  :
+              o1[1] < -30 ? -30 :
+              o1[1];
+        geoProjection.rotate(o1)
+        toRender(reducer(data))
+      }
+    })
+    .on('mouseup', _ => {m0 = undefined})
   $pixelRatio.addEventListener('change', _ => {
     if ($pixelRatio.value.length === 0) {
       $pixelRatio.value = 100000
@@ -111,4 +118,6 @@ d3.json('public/geolocs.json', data => {
   $townFilter.addEventListener('change', _ => toRender(
     reducer(data)
   ))
-})
+}
+
+startup()
