@@ -50,13 +50,6 @@ const startup = async () => {
 
   const outerWidth = 800
   const outerHeight = 500
-  const radius = 2
-  const margins = {
-    top: 20,
-    bottom: 20,
-    left: 20,
-    right: 20
-  }
 
   // Scales.
   const geoProjection = cartho.geoOrthographic()
