@@ -1,6 +1,7 @@
 import './styles.css'
 import * as d3 from 'd3'
 import * as R from 'ramda'
+import * as topo from 'topojson-client'
 
 import * as cartho from 'd3-geo'
 
@@ -52,20 +53,24 @@ const startup = async () => {
   const outerHeight = 500
 
   // Scales.
-  const geoProjection = cartho.geoOrthographic()
-    .translate([outerWidth / 2, outerHeight  / 2])
+  const geoProjection = cartho.geoMercator()
+      .scale(1)
+      .translate([0, 0])
+  const topologie = await (
+    await window.fetch('/public/fr-simple.json')
+  ).json()
 
-  // Currying the render function to avoid repetition:
-  // http://ramdajs.com/docs/#curry
-  // Equivalent : (x, y, z) => (data) =>
+  const features = topo.feature(topologie, topologie.objects['fr-departments'])
+  let s = 1960
+  const t = [
+    301.20837411844354, 2046.5388369824584
+  ]
+  geoProjection.scale(s).translate(t)
+
   const toRender = render(
-    // Composition is cool. Seel http://ramdajs.com/docs/#compose
-    // Equivalent to : d => xScale(xCol(d))
     geoProjection,
-    e => 1,
-    await (
-      await window.fetch('/public/world.json')
-    ).json(),
+    e => 3,
+    features,
   )
 
   const data = (
@@ -74,28 +79,25 @@ const startup = async () => {
     ).json()
   ).map(type).filter(e => e)
 
-  toRender(reducer(data))
 
-  let m0
-  let o0
   d3.select('svg')
-    .on('mousedown', d => {
-      m0 = [d3.event.pageX, d3.event.pageY]
-      o0 = geoProjection.rotate()
-      d3.event.preventDefault()
-    })
-    .on('mousemove', _ => {
-      if (m0) {
-        const m1 = [d3.event.pageX, d3.event.pageY]
-        const o1 = [o0[0] + (m1[0] - m0[0]) / 6, o0[1] + (m0[1] - m1[1]) / 6]
-        o1[1] = o1[1] > 30  ? 30  :
-              o1[1] < -30 ? -30 :
-              o1[1];
-        geoProjection.rotate(o1)
-        toRender(reducer(data))
-      }
-    })
-    .on('mouseup', _ => {m0 = undefined})
+    .call(d3.zoom().on('zoom', function (d) {
+      const x = d3.mouse(this)
+      geoProjection
+        .scale(s + d3.event.transform.k * 1000)
+        .translate([t[0] + d3.event.transform.x, t[1] + d3.event.transform.y])
+      console.log(
+        t[1] + d3.event.transform.y,
+        t[1], d3.event.transform.y
+      )
+      console.log(
+        t[0] + d3.event.transform.x,
+        t[0], d3.event.transform.x
+      )
+      toRender(reducer(data))
+    }))
+
+  toRender(reducer(data))
   $pixelRatio.addEventListener('change', _ => {
     if ($pixelRatio.value.length === 0) {
       $pixelRatio.value = 100000

@@ -60,64 +60,20 @@ export function render(geo, r, features) {
     .attr('width',  outerWidth)
     .attr('height', outerHeight)
 
-  //////////
-  // DEFS //
-  //////////
-  const ocean_fill = svg.append('defs')
-    .append('radialGradient')
-    .attr('id', 'ocean_fill')
-    .attr('cx', '75%')
-    .attr('cy', '25%');
-  ocean_fill
-    .append('stop')
-    .attr('offset', '5%')
-    .attr('stop-color', '#ddf')
-  ocean_fill
-    .append('stop')
-    .attr('offset', '100%')
-    .attr('stop-color', '#9ab')
-
-  const globe_highlight = svg.append('defs')
-    .append('radialGradient')
-    .attr('id', 'globe_highlight')
-    .attr('cx', '75%')
-    .attr('cy', '25%');
-  globe_highlight
-    .append('stop')
-    .attr('offset', '5%')
-    .attr('stop-color', '#ffd')
-    .attr('stop-opacity','0.6')
-  globe_highlight
-    .append('stop')
-    .attr('offset', '100%')
-    .attr('stop-color', '#ba9')
-    .attr('stop-opacity','0.2')
-
-  svg
-    .append('circle')
-    .attr('cx', outerWidth / 2).attr('cy', outerHeight / 2)
-    .attr('r', geo.scale())
-    .attr('class', 'noclicks')
-    .style('fill', 'url(#ocean_fill)')
-
   const circlesGroup = svg.append('g')
   const mapPath = circlesGroup.append('path').attr('class', 'map')
-
-  svg
-    .append('circle')
-    .attr('cx', outerWidth / 2).attr('cy', outerHeight / 2)
-    .attr('r', geo.scale())
-    .attr('class','noclicks')
-    .style('fill', 'url(#globe_highlight)')
-
+  const geoPath = d3.geoPath(geo)
   mapPath
     .datum(features)
-    .attr('d', d3.geoPath(geo))
+    .attr('d', geoPath)
+    .on('click', d => {
+      console.log(d)
+    })
 
   return (data) => {
     mapPath
       .datum(features)
-      .attr('d', d3.geoPath(geo))
+      .attr('d', geoPath)
 
     const fill = R.compose(
       d3

@@ -29,6 +29,8 @@
     "lodash": "^4.17.5",
     "node-where": "^1.1.0",
     "ramda": "^0.25.0",
-    "request": "latest"
+    "request": "latest",
+    "topojson-client": "^3.0.0",
+    "topojson-simplify": "^3.0.2"
   }
 }
