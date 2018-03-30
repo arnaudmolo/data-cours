@@ -123,7 +123,7 @@ const scrap = async () => {
       }, []))
 
       fs.writeFile(
-        '../public/geolocs.json',
+        'public/geolocs.json',
         JSON.stringify(
           finalRes,
           null,
