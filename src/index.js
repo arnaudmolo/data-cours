@@ -11,13 +11,12 @@ const $pixelRatio = document.querySelector('#ppx')
 const $levelFilter = document.querySelector('#filter')
 const $townFilter = document.querySelector('#town')
 
-const type = d => {
-  return {
-    createdAt: new Date(d.createdAt),
-    latLng: d.latLng,
-    label: d.city || 'unknow city'
-  }
-}
+const type = d => ({
+  population: parseInt(d.population),
+  latitude: parseFloat(d.latitude),
+  longitude: +d.longitude,
+  label: d.name
+})
 
 d3.json('https://unpkg.com/d3-format@1/locale/fr-FR.json', function(error, locale) {
   // Download french formats.
@@ -51,28 +50,33 @@ const startup = async () => {
 
   const outerWidth = 800
   const outerHeight = 500
+  const rCol = R.prop('population')
 
   // Scales.
-  const topologie = await (
-    await window.fetch('/public/departments-simple.topojson')
+  const features = await (
+    await window.fetch('/public/world.json')
   ).json()
-
-  console.log(topologie)
-
-  const features = topo.feature(topologie, topologie.objects.departments)
+  const rScale = d3.scaleSqrt()
+  // const features = topo.feature(topologie, topologie.objects.departments)
   const geoProjection = d3.geoMercator().scale(1).translate([0, 0]).scale(1960).translate([301.20837411844354, 2046.5388369824584])
+
+
+  const data = d3.csvParse(
+    await (
+      await window.fetch('public/countries_population.csv')
+    ).text()
+  ).map(type).filter(e => e)
+
+  const radiusDataExtent = d3.extent(data, rCol)
+  rScale.domain(radiusDataExtent).range([
+    1, Math.sqrt(radiusDataExtent[1] / ($pixelRatio.value * Math.PI))
+  ])
 
   const toRender = render(
     geoProjection,
-    e => 3,
+    R.compose(rScale, rCol),
     features,
   )
-
-  const data = (
-    await (
-      await window.fetch('public/geolocs.json')
-    ).json()
-  ).map(type).filter(e => e)
 
 
   d3.select('svg')
@@ -81,14 +85,6 @@ const startup = async () => {
       geoProjection
         .scale(s + d3.event.transform.k * 1000)
         .translate([t[0] + d3.event.transform.x, t[1] + d3.event.transform.y])
-      console.log(
-        t[1] + d3.event.transform.y,
-        t[1], d3.event.transform.y
-      )
-      console.log(
-        t[0] + d3.event.transform.x,
-        t[0], d3.event.transform.x
-      )
       toRender(reducer(data))
     }))
 
