@@ -68,7 +68,6 @@ export function render(x, y, r, data) {
   circles
     .enter()
     .append('circle')
-    .attr('id', d => d.label)
     .attr('cx', x)
     .attr('cy', y)
     .attr('r', 0)
@@ -80,6 +79,7 @@ export function render(x, y, r, data) {
         .attr('r', d => r(d) * 2)
       // Finding the node position on the page to locate the popup.
       const bbox = svg.node().getBoundingClientRect()
+      console.log(bbox)
       const doc = document.documentElement
       const left = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0)
       const top = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0)
