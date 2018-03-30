@@ -8,6 +8,8 @@ const $pixelRatio = document.querySelector('#ppx')
 const $levelFilter = document.querySelector('#filter')
 const $townFilter = document.querySelector('#town')
 
+console.log('Bienvenue dans l\'app')
+
 const type = d => ({
   population: parseInt(d.population),
   latitude: parseFloat(d.latitude),
