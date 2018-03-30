@@ -14,6 +14,8 @@ const svg = d3.select('body').append('svg')
   .attr('width',  outerWidth)
   .attr('height', outerHeight)
 const circlesGroup = svg.append('g')
+svg.call(d3.zoom()
+  .on('zoom', d => circlesGroup.attr('transform', d3.event.transform)))
 
 // Views.
 // function creating a snipped line.
