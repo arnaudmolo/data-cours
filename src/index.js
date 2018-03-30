@@ -53,19 +53,14 @@ const startup = async () => {
   const outerHeight = 500
 
   // Scales.
-  const geoProjection = cartho.geoMercator()
-      .scale(1)
-      .translate([0, 0])
   const topologie = await (
-    await window.fetch('/public/fr-simple.json')
+    await window.fetch('/public/departments-simple.topojson')
   ).json()
 
-  const features = topo.feature(topologie, topologie.objects['fr-departments'])
-  let s = 1960
-  const t = [
-    301.20837411844354, 2046.5388369824584
-  ]
-  geoProjection.scale(s).translate(t)
+  console.log(topologie)
+
+  const features = topo.feature(topologie, topologie.objects.departments)
+  const geoProjection = d3.geoMercator().scale(1).translate([0, 0]).scale(1960).translate([301.20837411844354, 2046.5388369824584])
 
   const toRender = render(
     geoProjection,
