@@ -103,7 +103,7 @@ const scrap = async () => {
         }
       }).get()
 
-      const finalRes = await Promise.all(res.reduce((previous, {content}) => {
+      let finalRes = await Promise.all(res.reduce((previous, {content}) => {
         return previous.concat(content.map(async e => {
           if (e.ip) {
             try {
@@ -121,6 +121,22 @@ const scrap = async () => {
           return e
         }))
       }, []))
+
+      const json2geo = data => ({
+        type: 'FeatureCollection',
+        features: data.map(e => ({
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [...e.latLng].reverse()
+          },
+          properties: e
+        }))
+      })
+
+      finalRes = json2geo(finalRes)
+
+      console.log(finalRes)
 
       fs.writeFile(
         'public/geolocs.json',
