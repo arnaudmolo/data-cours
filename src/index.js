@@ -3,6 +3,7 @@ import * as d3 from 'd3'
 import * as R from 'ramda'
 
 import { render } from './View'
+import renderBrush from './Brush'
 
 const $pixelRatio = document.querySelector('#ppx')
 const $levelFilter = document.querySelector('#filter')
@@ -63,11 +64,17 @@ const startup = async () => {
     1, Math.sqrt(radiusDataExtent[1] / ($pixelRatio.value * Math.PI))
   ])
 
-  const toRender = render(
+  const toRenderViz = render(
     geoProjection,
     _ => 2,
     features
   )
+  const toRenderBrush = renderBrush()
+
+  const toRender = data => {
+    toRenderBrush(data)
+    toRenderViz(data)
+  }
 
   const $scene = d3.select('svg g')
   d3.select('svg').call(d3.zoom().on('zoom', () =>
