@@ -27,6 +27,8 @@
     "express": "latest",
     "he": "^1.1.1",
     "lodash": "^4.17.5",
+    "mapbox-gl": "^0.44.2",
+    "moment": "^2.22.0",
     "node-where": "^1.1.0",
     "ramda": "^0.25.0",
     "request": "latest",

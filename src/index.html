@@ -4,14 +4,22 @@
   <meta charset='UTF-8'>
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
   <meta http-equiv='X-UA-Compatible' content='ie=edge'>
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.1/mapbox-gl.css' rel='stylesheet' />
   <title>Document</title>
 </head>
 <body>
   <div class="content-container">
-    <p>People per pixel : <input id='ppx' type='number' /></p>
-    <p>filter : <input id='filter' type='number' value="2000000" /></p>
-    <p>filter par ville : <input id='town' type='text' /></p>
     <div id="content"></div>
+    <div class='map-overlay top'>
+      <div class='map-overlay-inner'>
+        <div id='legend' class='legend'>
+          <svg id="context" wdith='400' height='30'>
+            <g></g>
+          </svg>
+          <div id="month">Timeline form Jannuary to December</div>
+        </div>
+      </div>
+    </div>
   </div>
 </body>
 </html>
