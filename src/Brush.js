@@ -1,9 +1,5 @@
 import * as d3 from 'd3'
-
-function createBrush (selection, callback) {
-  selection
-    .call(d3.brushX().on('brush', callback))
-}
+import moment from 'moment'
 
 export default function renderBrush (callback) {
   const outerWidth = 800
@@ -15,11 +11,15 @@ export default function renderBrush (callback) {
   const $xAxis = svg.append('g').attr('class', 'xAxis')
   const xAxis = d3.axisBottom(x)
   const context = svg.append('g')
+  context.call(
+    d3.brushX().on('brush', () =>
+      callback(d3.event.selection.map(x.invert))
+    )
+  )
   return function render (data) {
-    context.call(createBrush, callback)
-    const xd = d3.extent(data, d => d.properties.createdAt)
-    console.log(xd)
-    x.domain(xd)
-    $xAxis.call(xAxis)
+    x.domain(d3.extent(data, d => d.properties.date))
+    $xAxis
+      .attr('class', 'axis axis--x')
+      .call(xAxis)
   }
 }
