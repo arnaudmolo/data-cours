@@ -9,13 +9,6 @@ const $pixelRatio = document.querySelector('#ppx')
 const $levelFilter = document.querySelector('#filter')
 const $townFilter = document.querySelector('#town')
 
-const type = d => ({
-  population: parseInt(d.population),
-  latitude: parseFloat(d.latitude),
-  longitude: +d.longitude,
-  label: d.name
-})
-
 d3.json('https://unpkg.com/d3-format@1/locale/fr-FR.json', function (error, locale) {
   // Download french formats.
   // Here to show syntax example. Don't do it.
@@ -69,7 +62,9 @@ const startup = async () => {
     _ => 2,
     features
   )
-  const toRenderBrush = renderBrush()
+  const toRenderBrush = renderBrush(() => {
+    console.log('brush', d3.event.selection, toRender)
+  })
 
   const toRender = data => {
     toRenderBrush(data)
