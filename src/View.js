@@ -25,7 +25,7 @@ const createText = text => selection =>
 // argument 2 (y): function that define the y position.
 // argument 3 (container): dom element to append the element.
 // return : a function taking 1 argument (data) to build the popup.
-const createPopup = (x, y, container) => (data) => {
+const createPopup = (x, y, container) => (data) => {
   const bar = container.selectAll('div').data(data)
   bar
     .enter()
@@ -40,9 +40,9 @@ const createPopup = (x, y, container) => (data) => {
         .call(createText(d => d.label))
         .call(createText(d => format(d.population)))
     })
-    bar
-      .exit()
-      .remove()
+  bar
+    .exit()
+    .remove()
 }
 
 // function that render the visualisation.
@@ -51,13 +51,13 @@ const createPopup = (x, y, container) => (data) => {
 // argument 3 (r): function that define the radius of each data.
 // argument 4 (data): data to build the visualisation.
 // return : circles d3 selection.
-export function render(geo, r, features) {
+export function render (geo, r, features) {
   const x = d => geo([d.longitude, d.latitude])[0]
   const y = d => geo([d.longitude, d.latitude])[1]
 
   // Visualisation canvas.
   const svg = d3.select('body').append('svg')
-    .attr('width',  outerWidth)
+    .attr('width', outerWidth)
     .attr('height', outerHeight)
 
   const circlesGroup = svg.append('g')
@@ -101,7 +101,7 @@ export function render(geo, r, features) {
         const bbox = svg.node().getBoundingClientRect()
         const doc = document.documentElement
         const left = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0)
-        const top = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0)
+        const top = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0)
         createPopup(
           _ => d3.event.pageX - bbox.x - left,
           _ => d3.event.pageY - bbox.y - top,
