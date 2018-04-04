@@ -1,5 +1,8 @@
 import * as d3 from 'd3'
 import * as R from 'ramda'
+import mapboxgl from 'mapbox-gl'
+
+mapboxgl.accessToken = 'pk.eyJ1IjoiYXJuYXVkbW9sbyIsImEiOiJjaW5zbjgxYXQwMGowdzdrbGQ5a2NlaGpuIn0.JxCzxWoDULTqfKatKDFg9g'
 
 const outerWidth = 800
 const outerHeight = 500
@@ -49,42 +52,41 @@ const createPopup = (x, y, container) => (data) => {
 // argument 3 (r): function that define the radius of each data.
 // argument 4 (data): data to build the visualisation.
 // return : circles d3 selection.
-export function render (geo, r, features) {
-  const x = d => geo(d.geometry.coordinates)[0]
-  const y = d => geo(d.geometry.coordinates)[1]
+export function render (geo, r) {
+  const map = new mapboxgl.Map({
+    container: 'content',
+    style: 'mapbox://styles/arnaudmolo/cjfk1zs7bejmr2rnypmmdsy4s',
+    center: [0.380435, 47.530053],
+    zoom: 5.85,
+    bearing: 0,
+    pitch: 0
+  })
+
+  function mapboxProjection (lonlat) {
+    const p = map.project(new mapboxgl.LngLat(lonlat[0], lonlat[1]))
+    return [p.x, p.y]
+  }
+
+  const mapContainer = map.getCanvasContainer()
+
+  const x = d => mapboxProjection(d.geometry.coordinates)[0]
+  const y = d => mapboxProjection(d.geometry.coordinates)[1]
 
   // Visualisation canvas.
-  const svg = d3.select('body').append('svg')
-    .attr('width', outerWidth)
-    .attr('height', outerHeight)
+  const svg = d3.select(mapContainer).append('svg').attr('class', 'circles--container')
 
   const circlesGroup = svg.append('g')
-  const mapPath = circlesGroup.append('path').attr('class', 'map')
-  const geoPath = d3.geoPath(geo)
-  mapPath
-    .datum(features)
-    .attr('d', geoPath)
-    .on('click', d => {
-      console.log(d)
-    })
 
   return (data) => {
-    const fill = R.compose(
-      d3
-        .scaleOrdinal(d3.schemeCategory10)
-        .domain(d3.extent(data, r)),
-      d => d.latLng
-    )
-
     const circles = circlesGroup.selectAll('circle').data(data)
 
     circles
       .enter()
       .append('circle')
-      .attr('fill', fill)
+      .attr('fill', 'cyan')
       .attr('cx', x)
       .attr('cy', y)
-      .attr('r', r)
+      .attr('r', 5)
       .on('mouseenter', function (d) {
         // Apply a notable interaction.
         d3.select(this)

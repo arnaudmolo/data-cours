@@ -49,3 +49,9 @@ body {
 .map {
   fill: rgb(117, 87, 57);
 }
+
+.circles--container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}

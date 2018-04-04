@@ -43,10 +43,7 @@ const startup = async () => {
     selected: [new Date(), new Date()]
   }
 
-  const [ features, data ] = [
-    await (
-      await window.fetch('/public/world.json')
-    ).json(),
+  const [ data ] = [
     (await (
       await window.fetch('public/geolocs.json')
     ).json()).features.map(type)
@@ -54,11 +51,7 @@ const startup = async () => {
 
   state.selected = d3.extent(data, d => d.properties.date)
 
-  const toRender = render(
-    geoProjection,
-    _ => 10,
-    features
-  )
+  const toRender = render(geoProjection)
   renderBrush((mapped) => {
     state.selected = mapped
     toRender(reducer(state, data))
@@ -68,6 +61,10 @@ const startup = async () => {
   d3.select('svg').call(d3.zoom().on('zoom', () =>
     $scene.attr('transform', d3.event.transform)
   ))
+
+  window.addEventListener('resize', event => {
+    toRender(reducer(state, data))
+  })
 
   toRender(reducer(state, data))
 }
