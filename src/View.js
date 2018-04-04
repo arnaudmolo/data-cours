@@ -37,8 +37,8 @@ const createPopup = (x, y, container) => (data) => {
       const el = d3.select(this)
       // Syntax to call a function on a d3 selection.
       el
-        .call(createText(d => d.label))
-        .call(createText(d => format(d.population)))
+        .call(createText(d => d.properties.city))
+        .call(createText(d => d.properties.date.format('dddd, MMMM Do YYYY, H:mm:ss')))
     })
   bar
     .exit()

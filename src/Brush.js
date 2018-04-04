@@ -1,5 +1,4 @@
 import * as d3 from 'd3'
-import moment from 'moment'
 
 export default function renderBrush (callback) {
   const outerWidth = 800
