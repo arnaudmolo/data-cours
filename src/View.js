@@ -52,7 +52,7 @@ const createPopup = (x, y, container) => (data) => {
 // argument 3 (r): function that define the radius of each data.
 // argument 4 (data): data to build the visualisation.
 // return : circles d3 selection.
-export function render (geo, r) {
+export function render () {
   const map = new mapboxgl.Map({
     container: 'content',
     style: 'mapbox://styles/arnaudmolo/cjfk1zs7bejmr2rnypmmdsy4s',
@@ -76,8 +76,16 @@ export function render (geo, r) {
   const svg = d3.select(mapContainer).append('svg').attr('class', 'circles--container')
 
   const circlesGroup = svg.append('g')
+  let _data = []
+  map.on('zoom', () => {
+    render(_data)
+  })
+  map.on('drag', () => {
+    render(_data)
+  })
 
-  return (data) => {
+  const render = (data) => {
+    _data = data
     const circles = circlesGroup.selectAll('circle').data(data)
 
     circles
@@ -92,7 +100,7 @@ export function render (geo, r) {
         d3.select(this)
           .transition()
           .duration(100)
-          .attr('r', d => r(d) * 2)
+          .attr('r', 10)
         // Finding the node position on the page to locate the popup.
         const bbox = svg.node().getBoundingClientRect()
         const doc = document.documentElement
@@ -105,7 +113,7 @@ export function render (geo, r) {
       })
       .on('mouseleave', function (d) {
         // Set the normal size and remove the popup
-        d3.select(this).transition().duration(100).attr('r', r)
+        d3.select(this).transition().duration(100).attr('r', 5)
       })
 
     circles
@@ -118,5 +126,8 @@ export function render (geo, r) {
     circles
       .attr('cx', x)
       .attr('cy', y)
+
+    return map
   }
+  return render
 }

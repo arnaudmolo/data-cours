@@ -31,13 +31,6 @@ const reducer = (state, data) => {
   })
 }
 
-const geoProjection = d3
-  .geoMercator()
-  .scale(1)
-  .translate([0, 0])
-  .scale(1960)
-  .translate([301.20837411844354, 2046.5388369824584])
-
 const startup = async () => {
   let state = {
     selected: [new Date(), new Date()]
@@ -51,16 +44,11 @@ const startup = async () => {
 
   state.selected = d3.extent(data, d => d.properties.date)
 
-  const toRender = render(geoProjection)
+  const toRender = render()
   renderBrush((mapped) => {
     state.selected = mapped
     toRender(reducer(state, data))
   })(data)
-  const $scene = d3.select('svg g')
-
-  d3.select('svg').call(d3.zoom().on('zoom', () =>
-    $scene.attr('transform', d3.event.transform)
-  ))
 
   window.addEventListener('resize', event => {
     toRender(reducer(state, data))
