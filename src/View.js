@@ -4,8 +4,6 @@ import * as R from 'ramda'
 const outerWidth = 800
 const outerHeight = 500
 // Popup container. Styled to follow the svg.
-const $popupContainer = document.querySelector('#content')
-const format = d3.formatPrefix(`.${d3.precisionPrefix(1e5, 1.3e6)}`, 3e6)
 
 // Snippet.
 const translate = (x, y) => `translate(${x}px, ${y}px)`
@@ -52,9 +50,7 @@ const createPopup = (x, y, container) => (data) => {
 // argument 4 (data): data to build the visualisation.
 // return : circles d3 selection.
 export function render (geo, r, features) {
-  const x = d => {
-    return geo(d.geometry.coordinates)[0]
-  }
+  const x = d => geo(d.geometry.coordinates)[0]
   const y = d => geo(d.geometry.coordinates)[1]
 
   // Visualisation canvas.
@@ -73,10 +69,6 @@ export function render (geo, r, features) {
     })
 
   return (data) => {
-    mapPath
-      .datum(features)
-      .attr('d', geoPath)
-
     const fill = R.compose(
       d3
         .scaleOrdinal(d3.schemeCategory10)
@@ -119,7 +111,7 @@ export function render (geo, r, features) {
     circles
       .exit()
       .transition()
-      .duration(2000)
+      .duration(600)
       .attr('r', 0)
       .remove()
 
