@@ -109,6 +109,7 @@ const scrap = async () => {
             try {
               const whereIs = await geoByIp(e)
               const latLng = [whereIs.get('lat'), whereIs.get('lng')]
+              console.log(latLng)
               return {
                 ...e,
                 latLng,
@@ -134,7 +135,7 @@ const scrap = async () => {
         }))
       })
 
-      finalRes = json2geo(finalRes)
+      // finalRes = json2geo(finalRes)
 
       console.log(finalRes)
 
@@ -145,11 +146,11 @@ const scrap = async () => {
           null,
           4
         ), (err, res) => {
-        if (err) {
-          throw err
-        }
-        console.log('success!')
-      })
+          if (err) {
+            throw err
+          }
+          console.log('success!')
+        })
     }
   })
 }
