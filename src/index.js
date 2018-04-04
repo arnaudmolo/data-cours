@@ -71,13 +71,10 @@ const startup = async () => {
     features
   )
 
-  d3.select('svg')
-    .call(d3.zoom().on('zoom', function (d) {
-      geoProjection
-        .scale(s + d3.event.transform.k * 1000)
-        .translate([t[0] + d3.event.transform.x, t[1] + d3.event.transform.y])
-      toRender(reducer(data))
-    }))
+  const $scene = d3.select('svg g')
+  d3.select('svg').call(d3.zoom().on('zoom', () =>
+    $scene.attr('transform', d3.event.transform)
+  ))
 
   toRender(reducer(data))
   $pixelRatio.addEventListener('change', _ => {
