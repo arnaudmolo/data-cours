@@ -98,14 +98,12 @@ export function render (geo, r, features) {
         const top = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0)
         createPopup(
           _ => d3.event.pageX - bbox.x - left,
-          _ => d3.event.pageY - bbox.y - top,
-          d3.select($popupContainer)
+          _ => d3.event.pageY - bbox.y - top
         )([d])
       })
       .on('mouseleave', function (d) {
         // Set the normal size and remove the popup
         d3.select(this).transition().duration(100).attr('r', r)
-        return createPopup(x, y, d3.select($popupContainer))([])
       })
 
     circles

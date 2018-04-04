@@ -31,20 +31,26 @@ const reducer = (state, data) => {
   })
 }
 
+const geoProjection = d3
+  .geoMercator()
+  .scale(1)
+  .translate([0, 0])
+  .scale(1960)
+  .translate([301.20837411844354, 2046.5388369824584])
+
 const startup = async () => {
   let state = {
     selected: [new Date(), new Date()]
   }
 
-  // Scales.
-  const features = await (
-    await window.fetch('/public/world.json')
-  ).json()
-  const geoProjection = d3.geoMercator().scale(1).translate([0, 0]).scale(1960).translate([301.20837411844354, 2046.5388369824584])
-
-  const data = (await (
-    await window.fetch('public/geolocs.json')
-  ).json()).features.map(type)
+  const [ features, data ] = [
+    await (
+      await window.fetch('/public/world.json')
+    ).json(),
+    (await (
+      await window.fetch('public/geolocs.json')
+    ).json()).features.map(type)
+  ]
 
   state.selected = d3.extent(data, d => d.properties.date)
 
@@ -58,7 +64,7 @@ const startup = async () => {
     toRender(reducer(state, data))
   })(data)
   const $scene = d3.select('svg g')
-  console.log($scene.node())
+
   d3.select('svg').call(d3.zoom().on('zoom', () =>
     $scene.attr('transform', d3.event.transform)
   ))
