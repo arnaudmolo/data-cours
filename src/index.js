@@ -54,11 +54,9 @@ const startup = async () => {
   // const features = topo.feature(topologie, topologie.objects.departments)
   const geoProjection = d3.geoMercator().scale(1).translate([0, 0]).scale(1960).translate([301.20837411844354, 2046.5388369824584])
 
-  const data = d3.csvParse(
-    await (
-      await window.fetch('public/countries_population.csv')
-    ).text()
-  ).map(type).filter(e => e)
+  const data = (await (
+    await window.fetch('public/geolocs.json')
+  ).json()).features
 
   const radiusDataExtent = d3.extent(data, rCol)
   rScale.domain(radiusDataExtent).range([
@@ -67,7 +65,7 @@ const startup = async () => {
 
   const toRender = render(
     geoProjection,
-    R.compose(rScale, rCol),
+    _ => 2,
     features
   )
 

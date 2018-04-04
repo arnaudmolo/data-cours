@@ -52,8 +52,10 @@ const createPopup = (x, y, container) => (data) => {
 // argument 4 (data): data to build the visualisation.
 // return : circles d3 selection.
 export function render (geo, r, features) {
-  const x = d => geo([d.longitude, d.latitude])[0]
-  const y = d => geo([d.longitude, d.latitude])[1]
+  const x = d => {
+    return geo(d.geometry.coordinates)[0]
+  }
+  const y = d => geo(d.geometry.coordinates)[1]
 
   // Visualisation canvas.
   const svg = d3.select('body').append('svg')
