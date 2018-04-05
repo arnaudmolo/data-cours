@@ -34,13 +34,11 @@ const startup = async () => {
   let state = {
     selected: [new Date(), new Date()]
   }
-  const rCol = R.prop('population')
 
   // Scales.
   const features = await (
     await window.fetch('/public/world.json')
   ).json()
-  const rScale = d3.scaleSqrt()
   // const features = topo.feature(topologie, topologie.objects.departments)
   const geoProjection = d3.geoMercator().scale(1).translate([0, 0]).scale(1960).translate([301.20837411844354, 2046.5388369824584])
 
@@ -57,11 +55,6 @@ const startup = async () => {
   const data = (await (
     await window.fetch('public/geolocs.json')
   ).json()).features.map(type)
-
-  const radiusDataExtent = d3.extent(data, rCol)
-  rScale.domain(radiusDataExtent).range([
-    1, Math.sqrt(radiusDataExtent[1] / ($pixelRatio.value * Math.PI))
-  ])
 
   state.selected = d3.extent(data, d => d.properties.date)
 
