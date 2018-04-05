@@ -1,11 +1,11 @@
 import * as d3 from 'd3'
 import * as R from 'ramda'
+import mapboxgl from 'mapbox-gl'
 
-const outerWidth = 800
-const outerHeight = 500
+mapboxgl.accessToken = 'pk.eyJ1IjoiYXJuYXVkbW9sbyIsImEiOiJjaW5zbjgxYXQwMGowdzdrbGQ5a2NlaGpuIn0.JxCzxWoDULTqfKatKDFg9g'
+
 // Popup container. Styled to follow the svg.
 const $popupContainer = document.querySelector('#content')
-const format = d3.formatPrefix(`.${d3.precisionPrefix(1e5, 1.3e6)}`, 3e6)
 
 // Snippet.
 const translate = (x, y) => `translate(${x}px, ${y}px)`
@@ -51,31 +51,32 @@ const createPopup = (x, y, container) => (data) => {
 // argument 3 (r): function that define the radius of each data.
 // argument 4 (data): data to build the visualisation.
 // return : circles d3 selection.
-export function render (geo, r, features) {
-  const x = d => {
-    return geo(d.geometry.coordinates)[0]
-  }
-  const y = d => geo(d.geometry.coordinates)[1]
-
+export function render (r) {
+  const map = new mapboxgl.Map({
+    container: 'content',
+    style: 'mapbox://styles/arnaudmolo/cjfk1zs7bejmr2rnypmmdsy4s'
+  })
   // Visualisation canvas.
-  const svg = d3.select('body').append('svg')
-    .attr('width', outerWidth)
-    .attr('height', outerHeight)
+  const svg = d3.select(map.getCanvasContainer())
+    .append('svg')
+    .attr('class', 'circles--container')
+
+  function mapBoxProjection (lonlat) {
+    const p = map.project(new mapboxgl.LngLat(lonlat[0], lonlat[1]))
+    return [p.x, p.y]
+  }
+
+  const x = d => mapBoxProjection(d.geometry.coordinates)[0]
+  const y = d => mapBoxProjection(d.geometry.coordinates)[1]
 
   const circlesGroup = svg.append('g')
-  const mapPath = circlesGroup.append('path').attr('class', 'map')
-  const geoPath = d3.geoPath(geo)
-  mapPath
-    .datum(features)
-    .attr('d', geoPath)
-    .on('click', d => {
-      console.log(d)
-    })
 
-  return (data) => {
-    mapPath
-      .datum(features)
-      .attr('d', geoPath)
+  let _data = []
+  map.on('zoom', () => render(_data))
+  map.on('drag', () => render(_data))
+
+  const render = (data) => {
+    _data = data
 
     const fill = R.compose(
       d3
@@ -127,4 +128,6 @@ export function render (geo, r, features) {
       .attr('cx', x)
       .attr('cy', y)
   }
+
+  return render
 }
