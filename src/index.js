@@ -36,11 +36,9 @@ const startup = async () => {
     selected: [new Date(), new Date()]
   }
 
-  const [ data ] = [
-    (await (
-      await window.fetch('public/geolocs.json')
-    ).json()).features.map(type)
-  ]
+  const data = (await (
+    await window.fetch('public/geolocs.json')
+  ).json()).features.map(type)
 
   state.selected = d3.extent(data, d => d.properties.date)
 

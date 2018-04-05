@@ -135,7 +135,7 @@ const scrap = async () => {
         }))
       })
 
-      // finalRes = json2geo(finalRes)
+      finalRes = json2geo(finalRes)
 
       console.log(finalRes)
 
