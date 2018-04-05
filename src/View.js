@@ -1,12 +1,7 @@
 import * as d3 from 'd3'
-import * as R from 'ramda'
 import mapboxgl from 'mapbox-gl'
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiYXJuYXVkbW9sbyIsImEiOiJjaW5zbjgxYXQwMGowdzdrbGQ5a2NlaGpuIn0.JxCzxWoDULTqfKatKDFg9g'
-
-const outerWidth = 800
-const outerHeight = 500
-// Popup container. Styled to follow the svg.
 
 // Snippet.
 const translate = (x, y) => `translate(${x}px, ${y}px)`
@@ -84,9 +79,31 @@ export function render () {
     render(_data)
   })
 
+  const createPopup = properties => {
+    let town = ``
+    let app = ``
+    let date = ``
+    if (properties.city) {
+      town = `<p>Ville: ${properties.city}</p>`
+    }
+    if (properties.app) {
+      app = `<p>Captured by ${properties.app}</p>`
+    }
+    if (properties.date) {
+      date = `<p>${properties.date.format('dddd, MMMM Do YYYY, H:mm:ss')}</p>`
+    }
+    return `<div>
+    ${town} ${app} ${date}
+  </div>`
+  }
+
   const render = (data) => {
     _data = data
     const circles = circlesGroup.selectAll('circle').data(data)
+    const popup = new mapboxgl.Popup({
+      closeButton: false,
+      closeOnClick: false
+    })
 
     circles
       .enter()
@@ -94,26 +111,24 @@ export function render () {
       .attr('fill', 'cyan')
       .attr('cx', x)
       .attr('cy', y)
-      .attr('r', 5)
-      .on('mouseenter', function (d) {
+      .attr('r', 3)
+      .on('mouseenter', function (e) {
         // Apply a notable interaction.
         d3.select(this)
           .transition()
           .duration(100)
           .attr('r', 10)
-        // Finding the node position on the page to locate the popup.
-        const bbox = svg.node().getBoundingClientRect()
-        const doc = document.documentElement
-        const left = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0)
-        const top = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0)
-        createPopup(
-          _ => d3.event.pageX - bbox.x - left,
-          _ => d3.event.pageY - bbox.y - top
-        )([d])
+        const coordinates = e.geometry.coordinates.slice()
+
+        popup
+          .setLngLat(coordinates)
+          .setHTML(createPopup(e.properties))
+          .addTo(map)
       })
       .on('mouseleave', function (d) {
         // Set the normal size and remove the popup
-        d3.select(this).transition().duration(100).attr('r', 5)
+        popup.remove()
+        d3.select(this).transition().duration(100).attr('r', 3)
       })
 
     circles
