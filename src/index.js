@@ -67,7 +67,7 @@ const startup = async () => {
 
   const toRender = render(
     geoProjection,
-    _ => 10,
+    _ => 5,
     features
   )
   renderBrush((mapped) => {
