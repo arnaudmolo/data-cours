@@ -104,6 +104,22 @@ export function render () {
       closeButton: false,
       closeOnClick: false
     })
+    const lines = {
+        type: 'FeatureCollection',
+        features: data.reduce((previous, d, i) => {
+          if (!data[i + 1]) {
+            return previous
+          }
+          const next = data[i + 1]
+          return [...previous, {
+            type: 'Feature',
+            geometry: {
+              type: 'LineString',
+              coordinates: [d.geometry.coordinates, next.geometry.coordinates]
+            }
+          }]
+        }, [])
+      }
 
     circles
       .enter()
@@ -118,7 +134,7 @@ export function render () {
           .transition()
           .duration(100)
           .attr('r', 10)
-        const coordinates = e.geometry.coordinates.slice()
+        const coordinates = [...e.geometry.coordinates]
 
         popup
           .setLngLat(coordinates)
