@@ -16,29 +16,22 @@ const createText = text => selection =>
     .transition()
     .attr('opacity', 1)
 
-// function creating the Popup.
-// argument 1 (x): function that define the x position.
-// argument 2 (y): function that define the y position.
-// argument 3 (container): dom element to append the element.
-// return : a function taking 1 argument (data) to build the popup.
-const createPopup = (x, y, container) => (data) => {
-  const bar = container.selectAll('div').data(data)
-  bar
-    .enter()
-    .append('div')
-    .attr('class', 'popup-container')
-    .style('transform', d => translate(x(d), y(d)))
-    .each(function (d) {
-      // transform a DOM element to d3 selection.
-      const el = d3.select(this)
-      // Syntax to call a function on a d3 selection.
-      el
-        .call(createText(d => d.properties.city))
-        .call(createText(d => d.properties.date.format('dddd, MMMM Do YYYY, H:mm:ss')))
-    })
-  bar
-    .exit()
-    .remove()
+const createPopup = properties => {
+  let town = ``
+  let app = ``
+  let date = ``
+  if (properties.city) {
+    town = `<p>Ville: ${properties.city}</p>`
+  }
+  if (properties.app) {
+    app = `<p>Captured by ${properties.app}</p>`
+  }
+  if (properties.date) {
+    date = `<p>${properties.date.format('dddd, MMMM Do YYYY, H:mm:ss')}</p>`
+  }
+  return `<div>
+  ${town} ${app} ${date}
+</div>`
 }
 
 // function that render the visualisation.
@@ -47,15 +40,7 @@ const createPopup = (x, y, container) => (data) => {
 // argument 3 (r): function that define the radius of each data.
 // argument 4 (data): data to build the visualisation.
 // return : circles d3 selection.
-export function render () {
-  const map = new mapboxgl.Map({
-    container: 'content',
-    style: 'mapbox://styles/arnaudmolo/cjfk1zs7bejmr2rnypmmdsy4s',
-    center: [0.380435, 47.530053],
-    zoom: 5.85,
-    bearing: 0,
-    pitch: 0
-  })
+export function render (map) {
 
   function mapboxProjection (lonlat) {
     const p = map.project(new mapboxgl.LngLat(lonlat[0], lonlat[1]))
@@ -71,34 +56,8 @@ export function render () {
   const svg = d3.select(mapContainer).append('svg').attr('class', 'circles--container')
 
   const circlesGroup = svg.append('g')
-  let _data = []
-  map.on('zoom', () => {
-    render(_data)
-  })
-  map.on('drag', () => {
-    render(_data)
-  })
-
-  const createPopup = properties => {
-    let town = ``
-    let app = ``
-    let date = ``
-    if (properties.city) {
-      town = `<p>Ville: ${properties.city}</p>`
-    }
-    if (properties.app) {
-      app = `<p>Captured by ${properties.app}</p>`
-    }
-    if (properties.date) {
-      date = `<p>${properties.date.format('dddd, MMMM Do YYYY, H:mm:ss')}</p>`
-    }
-    return `<div>
-    ${town} ${app} ${date}
-  </div>`
-  }
 
   const render = (data) => {
-    _data = data
     const circles = circlesGroup.selectAll('circle').data(data)
     const popup = new mapboxgl.Popup({
       closeButton: false,
