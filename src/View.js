@@ -1,5 +1,5 @@
 import * as d3 from 'd3'
-
+/* hidding world
 const outerWidth = 800
 const outerHeight = 500
 // Popup container. Styled to follow the svg.
@@ -104,4 +104,4 @@ export function render(x, y, r, data) {
     .attr('r', r)
 
   return circles
-}
+}*/

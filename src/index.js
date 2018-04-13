@@ -3,7 +3,71 @@ import * as d3 from 'd3'
 import * as R from 'ramda'
 
 import { render } from './View'
+// DEBUT CARTE FRANCE AVEC DEPARTEMENT
 
+var width = 550, height = 550;
+// Manipulationd des données d3
+var path = d3.geoPath();
+
+// center la map avec la taille
+var projection = d3.geoConicConformal()
+    .center([2.454071, 46.279229])
+    .scale(2600)
+    .translate([width / 2, height / 2]);
+
+//Projection assigner au path
+path.projection(projection);
+// selection de l'html #map pour l'affichage
+var svg = d3.select('#map').append("svg")
+    .attr("id", "svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var deps = svg.append("g");
+
+// chargement du fichier JSON
+d3.json('public/departments.json', function(req, geojson) {
+    deps.selectAll("path")
+        .data(geojson.features)
+        .enter()
+        .append("path")
+        .attr("d", path);
+});
+// Ajout des département
+
+//selectiond de l'élement
+var div = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+// ajout des département et link du fichier json
+d3.json('public/departments.json', function(req, geojson) {
+    deps.selectAll("path")
+        .data(geojson.features)
+        .enter()
+        .append("path")
+        .attr('class', 'department')
+        .attr("d", path)
+        .on("mouseover", function(d) {
+            div.transition()
+                .duration(200)
+                .style("opacity", .9);
+            div.html("Département : " + d.properties.NOM_DEPT + "<br>"
+                  +  "Région : " + d.properties.NOM_REGION)
+                .style("left", (d3.event.pageX + 30) + "px")
+                .style("top", (d3.event.pageY - 30) + "px")
+        })
+        .on("mouseout", function(d) {
+            div.transition()
+                .duration(500)
+                .style("opacity", 0);
+            div.html("")
+                .style("left", "0px")
+                .style("top", "0px");
+        });
+});
+
+/* DEBUT CARTE MONDE
 const $pixelRatio = document.querySelector('#ppx')
 const $levelFilter = document.querySelector('#filter')
 const $townFilter = document.querySelector('#town')
@@ -107,3 +171,4 @@ d3.csv('public/countries_population.csv', type, data => {
     reducer(data)
   ))
 })
+*/
