@@ -49,8 +49,8 @@ export function render (map) {
 
   const mapContainer = map.getCanvasContainer()
 
-  const x = d => mapboxProjection(d.geometry.coordinates)[0]
-  const y = d => mapboxProjection(d.geometry.coordinates)[1]
+  const x = d => mapboxProjection([d.Latitude, d.Longitude])[0]
+  const y = d => mapboxProjection([d.Latitude, d.Longitude])[1]
 
   // Visualisation canvas.
   const svg = d3.select(mapContainer).append('svg').attr('class', 'circles--container')
@@ -69,12 +69,14 @@ export function render (map) {
           if (!data[i + 1]) {
             return previous
           }
-          const next = data[i + 1]
+           // console.log(d);
+
+        const next = data[i + 1]
           return [...previous, {
             type: 'Feature',
             geometry: {
               type: 'LineString',
-              coordinates: [d.geometry.coordinates, next.geometry.coordinates]
+              coordinates: [d.Latitude.coordinates, next.Longitude.coordinates]
             }
           }]
         }, [])
@@ -83,7 +85,7 @@ export function render (map) {
     circles
       .enter()
       .append('circle')
-      .attr('fill', 'cyan')
+      .attr('fill', 'orange')
       .attr('cx', x)
       .attr('cy', y)
       .attr('r', 3)

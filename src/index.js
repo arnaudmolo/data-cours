@@ -1,22 +1,12 @@
 import './styles.css'
 import * as d3 from 'd3'
-import moment from 'moment'
+
 import mapboxgl from 'mapbox-gl'
 import * as R from 'ramda'
-
 import { render } from './View'
 import renderBrush from './Brush'
-
-const type = d => {
-  return {
-    ...d,
-    properties: {
-      ...d.properties,
-      date: moment(d.properties.createdAt)
-    }
-  }
-}
-
+mapboxgl.accessToken = 'pk.eyJ1IjoiYXJuYXVkbW9sbyIsImEiOiJjaW5zbjgxYXQwMGowdzdrbGQ5a2NlaGpuIn0.JxCzxWoDULTqfKatKDFg9g'
+///utiliser render
 d3.json('https://unpkg.com/d3-format@1/locale/fr-FR.json', function (error, locale) {
   // Download french formats.
   // Here to show syntax example. Don't do it.
@@ -24,13 +14,11 @@ d3.json('https://unpkg.com/d3-format@1/locale/fr-FR.json', function (error, loca
   d3.formatDefaultLocale(locale)
 })
 
+
 // Return different version of the data
 // depending on the state of the application.
 let reducer = (state, data) => {
-  const [dateMin, dateMax] = state.selected
-  return data.filter(d => {
-    return d.properties.date >= dateMin && d.properties.date <= dateMax
-  })
+
 }
 let state = {
   selected: [new Date(), new Date()]
@@ -38,70 +26,24 @@ let state = {
 const checkCache = (state) => state.selected.toString()
 reducer = R.memoizeWith(checkCache, reducer)
 
-function createLines (map, data) {
-  const lines = {
-    type: 'FeatureCollection',
-    features: data
-      .sort((a, b) =>
-        a.properties.date > b.properties.date
-      )
-      .reduce((previous, d, i) => {
-        if (!data[i + 1]) {
-          return previous
-        }
-        const next = data[i + 1]
-        return [...previous, {
-          properties: {
-            ...d.properties,
-            dateNumber: +d.properties.date
-          },
-          type: 'Feature',
-          geometry: {
-            type: 'LineString',
-            coordinates: [d.geometry.coordinates, next.geometry.coordinates]
-          }
-        }]
-      }, [])
+const type = d => {
+  return {
+    Latitude: parseInt(d.Latitude),
+    Longitude: parseInt(d.Longitude)
   }
-  map.on('load', () => {
-    map.addSource('fb-lines', {
-      type: 'geojson',
-      data: lines
-    })
 
-    map.addLayer({
-      id: 'facebook-roads',
-      type: 'line',
-      source: 'fb-lines',
-      layout: {
-        'line-cap': 'round'
-      },
-      paint: {
-        'line-color': 'hsl(154, 44%, 47%)',
-        'line-width': 2
-      }
-    })
-  })
 }
-
 const startup = async () => {
-  const data = (await (
-    await window.fetch('public/geolocs.json')
-  ).json()).features.map(type)
+  let rawdata = await (await window.fetch('public/flight/airports.csv')).text()
+  let data = d3.csvParse(rawdata).map(type).filter(d => d.Latitude < 90 && d.Latitude > -90)
 
-  state = {
-    ...state,
-    selected: d3.extent(data, d => d.properties.date)
-  }
+//const startup = async () => {
+//  const data = await (await window.fetch('public/flight/routes.csv')).text()
+//  console.log(d3.csvParse(data))
 
-  function filterBy ([minMonth, maxMonth]) {
-    const filters = [
-      'all',
-      ['>=', 'dateNumber', +minMonth],
-      ['<=', 'dateNumber', +maxMonth]
-    ]
-    map.setFilter('facebook-roads', filters)
-  }
+//const startup = async () => {
+//  const data = await (await window.fetch('public/flight/airlines.csv')).text()
+//  console.log(d3.csvParse(data))
 
   const map = new mapboxgl.Map({
     container: 'content',
@@ -111,31 +53,9 @@ const startup = async () => {
     bearing: 0,
     pitch: 0
   })
-
-  const toRender = render(map)
-  createLines(map, reducer(state, data))
-
-  map.on('zoom', () => {
-    toRender(reducer(state, data))
-  })
-  map.on('drag', () => {
-    toRender(reducer(state, data))
-  })
-
-  renderBrush((mapped) => {
-    state = {
-      ...state,
-      selected: mapped
-    }
-    toRender(reducer(state, data))
-    filterBy(state.selected)
-  })(data)
-
-  window.addEventListener('resize', event => {
-    toRender(reducer(state, data))
-  })
-
-  toRender(reducer(state, data))
+ render(map)(data)
 }
+
+
 
 startup()
