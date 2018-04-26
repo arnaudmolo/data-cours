@@ -1,14 +1,21 @@
 import './styles.css'
 import * as d3 from 'd3'
-import * as R from 'ramda'
 import moment from 'moment'
+import mapboxgl from 'mapbox-gl'
+import * as R from 'ramda'
 
 import { render } from './View'
 import renderBrush from './Brush'
 
-const $pixelRatio = document.querySelector('#ppx')
-const $levelFilter = document.querySelector('#filter')
-const $townFilter = document.querySelector('#town')
+const type = d => {
+  return {
+    ...d,
+    properties: {
+      ...d.properties,
+      date: moment(d.properties.createdAt)
+    }
+  }
+}
 
 d3.json('https://unpkg.com/d3-format@1/locale/fr-FR.json', function (error, locale) {
   // Download french formats.
@@ -19,59 +26,114 @@ d3.json('https://unpkg.com/d3-format@1/locale/fr-FR.json', function (error, loca
 
 // Return different version of the data
 // depending on the state of the application.
-const reducer = (state, data) => {
+let reducer = (state, data) => {
   const [dateMin, dateMax] = state.selected
   return data.filter(d => {
     return d.properties.date >= dateMin && d.properties.date <= dateMax
   })
 }
+let state = {
+  selected: [new Date(), new Date()]
+}
+const checkCache = (state) => state.selected.toString()
+reducer = R.memoizeWith(checkCache, reducer)
+
+function createLines (map, data) {
+  const lines = {
+    type: 'FeatureCollection',
+    features: data
+      .sort((a, b) =>
+        a.properties.date > b.properties.date
+      )
+      .reduce((previous, d, i) => {
+        if (!data[i + 1]) {
+          return previous
+        }
+        const next = data[i + 1]
+        return [...previous, {
+          properties: {
+            ...d.properties,
+            dateNumber: +d.properties.date
+          },
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: [d.geometry.coordinates, next.geometry.coordinates]
+          }
+        }]
+      }, [])
+  }
+  map.on('load', () => {
+    map.addSource('fb-lines', {
+      type: 'geojson',
+      data: lines
+    })
+
+    map.addLayer({
+      id: 'facebook-roads',
+      type: 'line',
+      source: 'fb-lines',
+      layout: {
+        'line-cap': 'round'
+      },
+      paint: {
+        'line-color': 'hsl(154, 44%, 47%)',
+        'line-width': 2
+      }
+    })
+  })
+}
 
 const startup = async () => {
-  // Set default values.
-  $pixelRatio.value = 100000
-  $levelFilter.value = 0
-  $townFilter.value = ''
-  let state = {
-    selected: [new Date(), new Date()]
-  }
-
-  // Scales.
-  const features = await (
-    await window.fetch('/public/world.json')
-  ).json()
-  // const features = topo.feature(topologie, topologie.objects.departments)
-  const geoProjection = d3.geoMercator().scale(1).translate([0, 0]).scale(1960).translate([301.20837411844354, 2046.5388369824584])
-
-  const type = d => {
-    return {
-      ...d,
-      properties: {
-        ...d.properties,
-        date: moment(d.properties.createdAt)
-      }
-    }
-  }
-
   const data = (await (
     await window.fetch('public/geolocs.json')
   ).json()).features.map(type)
 
-  state.selected = d3.extent(data, d => d.properties.date)
+  state = {
+    ...state,
+    selected: d3.extent(data, d => d.properties.date)
+  }
 
-  const toRender = render(
-    geoProjection,
-    _ => 5,
-    features
-  )
-  renderBrush((mapped) => {
-    state.selected = mapped
+  function filterBy ([minMonth, maxMonth]) {
+    const filters = [
+      'all',
+      ['>=', 'dateNumber', +minMonth],
+      ['<=', 'dateNumber', +maxMonth]
+    ]
+    map.setFilter('facebook-roads', filters)
+  }
+
+  const map = new mapboxgl.Map({
+    container: 'content',
+    style: 'mapbox://styles/arnaudmolo/cjfk1zs7bejmr2rnypmmdsy4s',
+    center: [0.380435, 47.530053],
+    zoom: 5.85,
+    bearing: 0,
+    pitch: 0
+  })
+
+  const toRender = render(map)
+  createLines(map, reducer(state, data))
+
+  map.on('zoom', () => {
     toRender(reducer(state, data))
-    // console.log('brush', mapped, d3.event.selection, toRender)
+  })
+  map.on('drag', () => {
+    toRender(reducer(state, data))
+  })
+
+  renderBrush((mapped) => {
+    state = {
+      ...state,
+      selected: mapped
+    }
+    toRender(reducer(state, data))
+    filterBy(state.selected)
   })(data)
-  const $scene = d3.select('svg g')
-  d3.select('svg').call(d3.zoom().on('zoom', () =>
-    $scene.attr('transform', d3.event.transform)
-  ))
+
+  window.addEventListener('resize', event => {
+    toRender(reducer(state, data))
+  })
 
   toRender(reducer(state, data))
 }
