@@ -14,6 +14,8 @@ body {
   shape-rendering: crispEdges;
 }
 
+/*Choisir la couleur du barchart*/
+
 .bar {
   fill: orange;
 }
@@ -63,6 +65,8 @@ body {
 var margin = {top: 40, right: 20, bottom: 30, left: 40},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
+  
+  // Le format du nombre d'abonnés
 
 var formatPercent = d3.format(".0%");
 
@@ -95,6 +99,8 @@ var svg = d3.select("body").append("svg")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 svg.call(tip);
+  
+  // Charger le CSV sur les données du nombre d'abonnés par club de Ligue 1
 
 d3.tsv("data.tsv", type, function(error, data) {
   x.domain(data.map(function(d) { return d.city; }));
