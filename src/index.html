@@ -1,19 +1,23 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en">
 <head>
-  <meta charset='UTF-8'>
-  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-  <meta http-equiv='X-UA-Compatible' content='ie=edge'>
-  <link href='https://api.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.css' rel='stylesheet' />
-  <title>Document</title>
+    <meta charset="UTF-8">
+    <title> Maps CLOROPETH</title>
+    <link rel="stylesheet" type="text/css"
+          href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body>
-    <div id="content"></div>
-    <div class='map-overlay top'>
-      <div class='map-overlay-inner'>
-        <div id='legend' class='legend'>
-        </div>
-      </div>
+    <div id="container">
+        <h1>Simulation des attaques des zombies aux USA</h1>
+    </div>
+    <div id="chart"></div>
+    <div id="buttons">
+        <button type="button" class="panning up"><i class="fa fa-arrow-up"></i></button>
+        <button type="button" class="panning down"><i class="fa fa-arrow-down"></i></button>
+        <button type="button" class="panning left"><i class="fa fa-arrow-left"></i></button>
+        <button type="button" class="panning right"><i class="fa fa-arrow-right"></i></button>
+        <button type="button" class="zooming in"><i class="fa fa-plus"></i></button>
+        <button type="button" class="zooming out"><i class="fa fa-minus"></i></button>
     </div>
 </body>
 </html>
