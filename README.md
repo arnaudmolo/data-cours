@@ -1,1 +1,1 @@
-Datavisualisation sur le nombre d'abonnées par club en Ligue 1
+Datavisualisation sur le nombre d'abonnés par club en Ligue 1
