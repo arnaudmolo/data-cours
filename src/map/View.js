@@ -1,11 +1,11 @@
 import * as d3 from 'd3'
 import * as R from 'ramda'
+import mapboxgl from 'mapbox-gl'
 
-const outerWidth = 800
-const outerHeight = 500
+mapboxgl.accessToken = 'pk.eyJ1Ijoicm9iaG9rIiwiYSI6ImNpcTE5djVkMDAwMnBoc20yYTNuaTdoOHUifQ.ihGqP7NO2XJv97AhsBONZg'
+
 // Popup container. Styled to follow the svg.
 const $popupContainer = document.querySelector('#content')
-const format = d3.formatPrefix(`.${d3.precisionPrefix(1e5, 1.3e6)}`, 3e6)
 
 // Snippet.
 const translate = (x, y) => `translate(${x}px, ${y}px)`
@@ -51,45 +51,39 @@ const createPopup = (x, y, container) => (data) => {
 // argument 3 (r): function that define the radius of each data.
 // argument 4 (data): data to build the visualisation.
 // return : circles d3 selection.
-export function render (geo, r, features) {
-  const x = d => {
-    return geo(d.geometry.coordinates)[0]
-  }
-  const y = d => geo(d.geometry.coordinates)[1]
-
+export function render(r) {
+  const map = new mapboxgl.Map({
+    container: 'content',
+    style: 'mapbox://styles/mapbox/light-v9'
+  })
   // Visualisation canvas.
-  const svg = d3.select('body').append('svg')
-    .attr('width', outerWidth)
-    .attr('height', outerHeight)
+  const svg = d3.select(map.getCanvasContainer())
+    .append('svg')
+    .attr('class', 'circles--container')
+
+  function mapBoxProjection(lonlat) {
+    const p = map.project(new mapboxgl.LngLat(lonlat[0], lonlat[1]))
+    return [p.x, p.y]
+  }
+
+  const x = d => mapBoxProjection(d.geometry.coordinates)[0]
+  const y = d => mapBoxProjection(d.geometry.coordinates)[1]
 
   const circlesGroup = svg.append('g')
-  const mapPath = circlesGroup.append('path').attr('class', 'map')
-  const geoPath = d3.geoPath(geo)
-  mapPath
-    .datum(features)
-    .attr('d', geoPath)
-    .on('click', d => {
-      console.log(d)
-    })
 
-  return (data) => {
-    mapPath
-      .datum(features)
-      .attr('d', geoPath)
+  let _data = []
+  map.on('zoom', () => render(_data))
+  map.on('drag', () => render(_data))
 
-    const fill = R.compose(
-      d3
-        .scaleOrdinal(d3.schemeCategory10)
-        .domain(d3.extent(data, r)),
-      d => d.latLng
-    )
+  const render = (data) => {
+    _data = data
 
     const circles = circlesGroup.selectAll('circle').data(data)
 
     circles
       .enter()
       .append('circle')
-      .attr('fill', fill)
+      .attr('fill', '#7b6888')
       .attr('cx', x)
       .attr('cy', y)
       .attr('r', r)
@@ -99,21 +93,10 @@ export function render (geo, r, features) {
           .transition()
           .duration(100)
           .attr('r', d => r(d) * 2)
-        // Finding the node position on the page to locate the popup.
-        const bbox = svg.node().getBoundingClientRect()
-        const doc = document.documentElement
-        const left = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0)
-        const top = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0)
-        createPopup(
-          _ => d3.event.pageX - bbox.x - left,
-          _ => d3.event.pageY - bbox.y - top,
-          d3.select($popupContainer)
-        )([d])
       })
       .on('mouseleave', function (d) {
-        // Set the normal size and remove the popup
+        // Set the normal size
         d3.select(this).transition().duration(100).attr('r', r)
-        return createPopup(x, y, d3.select($popupContainer))([])
       })
 
     circles
@@ -127,4 +110,6 @@ export function render (geo, r, features) {
       .attr('cx', x)
       .attr('cy', y)
   }
+
+  return render
 }

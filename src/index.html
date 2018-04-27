@@ -4,14 +4,25 @@
   <meta charset='UTF-8'>
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
   <meta http-equiv='X-UA-Compatible' content='ie=edge'>
-  <title>Document</title>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.css' rel='stylesheet' />
+  <title>Dashboard</title>
 </head>
 <body>
-  <div class="content-container">
-    <p>People per pixel : <input id='ppx' type='number' /></p>
-    <p>filter : <input id='filter' type='number' value="2000000" /></p>
-    <p>filter par ville : <input id='town' type='text' /></p>
-    <div id="content"></div>
+  <div class="wrapper">
+    <div class="row">
+      <div class="col-6">
+        <svg class="msg-by-conv"></svg>
+      </div>
+      <div class="col-6">
+      <svg class="activity-evolution"></svg>
+      </div>
+    </div>
+    <div class="row main">
+      <svg class="events-responses"></svg>
+    </div>
+    <div id="content-container">
+      <div id="content"></div>
+    </div>
   </div>
 </body>
 </html>
