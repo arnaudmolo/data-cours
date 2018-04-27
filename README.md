@@ -1,6 +1,1 @@
-```
-git clone https://github.com/arnaudmolo/data-cours
-cd data-cours
-npm install
-npm start
-```
+Graph de l'evolution du taux directeur de la FED de 1955 à 2018
