@@ -66,6 +66,37 @@ d3.json('public/departments.json', function(req, geojson) {
                 .style("top", "0px");
         });
 });
+// simple camenbert
+
+
+  var data = [
+    {"value": 100, "name": "pomme"},
+    {"value": 70, "name": "kiwi"},
+    {"value": 40, "name": "banane"},
+    {"value": 15, "name": "grenade"},
+    {"value": 5, "name": "orange"},
+    {"value": 1, "name": "clementine"}
+  ]
+  d3plus.viz()
+    .container("#viz")
+    .data(data)
+    .type("pie")
+    .id("name")
+    .size("value")
+    .draw();
+
+    var data3 = [
+      {id: "pomme", x: 4, y:  7},
+      {id: "akiwi", x: 5, y: 25},
+      {id: "banane", x: 6, y: 13},
+      {id: "beta",  x: 4, y: 17},
+      {id: "orange",  x: 5, y:  8},
+      {id: "clementine",  x: 6, y: 13}
+    ];
+    new d3plus.BarChart()
+    .container("#chart")
+    .data(data)
+    .render();
 
 /* DEBUT CARTE MONDE
 const $pixelRatio = document.querySelector('#ppx')
