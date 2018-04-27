@@ -43,14 +43,14 @@ const createPopup = properties => {
 export function render (map) {
 
   function mapboxProjection (lonlat) {
-    const p = map.project(new mapboxgl.LngLat(lonlat[0], lonlat[1]))
+    const p = lonlat.project(new mapboxgl.LngLat(lonlat[0], lonlat[1]))
     return [p.x, p.y]
   }
 
   const mapContainer = map.getCanvasContainer()
 
-  const x = d => mapboxProjection([d.Latitude, d.Longitude])[0]
-  const y = d => mapboxProjection([d.Latitude, d.Longitude])[1]
+  const x = d => mapboxProjection([d[0], d[1]])[0]
+  const y = d => mapboxProjection([d[0], d[1]])[1]
 
   // Visualisation canvas.
   const svg = d3.select(mapContainer).append('svg').attr('class', 'circles--container')
@@ -76,7 +76,7 @@ export function render (map) {
             type: 'Feature',
             geometry: {
               type: 'LineString',
-              coordinates: [d.Latitude.coordinates, next.Longitude.coordinates]
+              coordinates: [data[0], data[1]]
             }
           }]
         }, [])

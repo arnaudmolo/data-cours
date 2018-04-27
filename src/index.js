@@ -27,15 +27,13 @@ const checkCache = (state) => state.selected.toString()
 reducer = R.memoizeWith(checkCache, reducer)
 
 const type = d => {
-  return {
-    Latitude: parseInt(d.Latitude),
-    Longitude: parseInt(d.Longitude)
-  }
-
+  return [parseFloat(d.Longitude), parseFloat(d.Latitude)]
 }
 const startup = async () => {
+  console.log('startup');
   let rawdata = await (await window.fetch('public/flight/airports.csv')).text()
-  let data = d3.csvParse(rawdata).map(type).filter(d => d.Latitude < 90 && d.Latitude > -90)
+  let data = d3.csvParse(rawdata).map(type)
+  console.log(data);
 
 //const startup = async () => {
 //  const data = await (await window.fetch('public/flight/routes.csv')).text()
