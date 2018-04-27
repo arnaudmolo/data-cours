@@ -50,8 +50,28 @@ body {
   fill: rgb(117, 87, 57);
 }
 
-.circles--container {
-  width: 100%;
-  height: 100%;
-  position: absolute;
+
+#info {
+    position: absolute;
+    top: 400px;
+    left: 35px;
+    width: 150px;
+    border: 1px gray dotted;
+    margin: 15px;
+    text-align: center;
 }
+
+p.country {
+    font-size: 1.2em;
+    font-weight: bolder;
+    color: "steelblue";
+}
+
+p.life {
+    font-size: 1em;
+    font-weight: bolder;
+    color: "steelblue";
+}
+
+
+  

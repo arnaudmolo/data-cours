@@ -1,19 +1,65 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en">
+
 <head>
-  <meta charset='UTF-8'>
-  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-  <meta http-equiv='X-UA-Compatible' content='ie=edge'>
-  <link href='https://api.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.css' rel='stylesheet' />
-  <title>Document</title>
+
+  <title>Datavisualisation JS </title>
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
 </head>
-<body>
-    <div id="content"></div>
-    <div class='map-overlay top'>
-      <div class='map-overlay-inner'>
-        <div id='legend' class='legend'>
-        </div>
-      </div>
-    </div>
+
+<div class="container">
+
+  <div class="page-header">
+
+    <h1>Espérance de vie dans le monde</h1>
+
+  </div>
+</div>
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<style>
+  .countries {
+    fill: none;
+    stroke: #fff;
+    stroke-linejoin: round;
+  }
+
+  .legendThreshold {
+    font-size: 12px;
+    font-family: sans-serif;
+  }
+
+  .caption {
+    fill: #000;
+    text-anchor: start;
+    font-weight: bold;
+  }
+
+
+</style>
+
+<svg width="960" height="600"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="https://d3js.org/topojson.v1.min.js"></script>
+<script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.24.0/d3-legend.js"></script>
+
+<div id="info">
+  <p class="country">Choisissez un pays</p>
+  <p class="life"></p>
+</div>
+  
+<script>
+        </script>
+
 </body>
-</html>
+  </html>

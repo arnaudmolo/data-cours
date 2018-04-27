@@ -1,141 +1,120 @@
-import './styles.css'
-import * as d3 from 'd3'
-import moment from 'moment'
-import mapboxgl from 'mapbox-gl'
-import * as R from 'ramda'
+import './styles.css';
+import * as d3 from 'd3';
+import {schemeBuPu} from 'd3-scale-chromatic';
+import {legendColor} from 'd3-svg-legend';
 
-import { render } from './View'
-import renderBrush from './Brush'
+//console.log('test')
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
 
-const type = d => {
-  return {
-    ...d,
-    properties: {
-      ...d.properties,
-      date: moment(d.properties.createdAt)
-    }
-  }
-}
+var path = d3.geoPath();
+var projection = d3.geoNaturalEarth1()
+    .scale(width / 2 / Math.PI)
+    .translate([width / 2, height / 2])
+var path = d3.geoPath()
+    .projection(projection);
 
-d3.json('https://unpkg.com/d3-format@1/locale/fr-FR.json', function (error, locale) {
-  // Download french formats.
-  // Here to show syntax example. Don't do it.
-  if (error) throw error
-  d3.formatDefaultLocale(locale)
-})
+var data = d3.map();
+var colorScheme = schemeBuPu[8];
+colorScheme.unshift("#eee")
+var colorScale = d3.scaleThreshold()
+    .domain([1, 30, 40, 50, 60, 70, 76, 81])
+    .range(colorScheme);
 
-// Return different version of the data
-// depending on the state of the application.
-let reducer = (state, data) => {
-  const [dateMin, dateMax] = state.selected
-  return data.filter(d => {
-    return d.properties.date >= dateMin && d.properties.date <= dateMax
-  })
-}
-let state = {
-  selected: [new Date(), new Date()]
-}
-const checkCache = (state) => state.selected.toString()
-reducer = R.memoizeWith(checkCache, reducer)
+var g = svg.append("g")
+    .attr("class", "legendThreshold")
+    .attr("transform", "translate(20,20)");
+g.append("text")
+    .attr("class", "caption")
+    .attr("x", 0)
+    .attr("y", -6)
+    .text("Légende")
 
-function createLines (map, data) {
-  const lines = {
-    type: 'FeatureCollection',
-    features: data
-      .sort((a, b) =>
-        a.properties.date > b.properties.date
-      )
-      .reduce((previous, d, i) => {
-        if (!data[i + 1]) {
-          return previous
-        }
-        const next = data[i + 1]
-        return [...previous, {
-          properties: {
-            ...d.properties,
-            dateNumber: +d.properties.date
-          },
-          type: 'Feature',
-          geometry: {
-            type: 'LineString',
-            coordinates: [d.geometry.coordinates, next.geometry.coordinates]
-          }
-        }]
-      }, [])
-  }
-  map.on('load', () => {
-    map.addSource('fb-lines', {
-      type: 'geojson',
-      data: lines
+
+var labels = ['No data', '1-29', '30-39', '40-49', '50-59', '60-69', '70-75', '76-80', '> 80'];
+var legend = legendColor()
+    .labels(function (d) {
+        return labels[d.i];
     })
+    .shapePadding(4)
+    .scale(colorScale);
+svg.select(".legendThreshold")
+    .call(legend);
 
-    map.addLayer({
-      id: 'facebook-roads',
-      type: 'line',
-      source: 'fb-lines',
-      layout: {
-        'line-cap': 'round'
-      },
-      paint: {
-        'line-color': 'hsl(154, 44%, 47%)',
-        'line-width': 2
-      }
+d3.queue()
+    .defer(d3.json, "public/world-110m.geojson")
+    .defer(d3.csv, "public/data-life.csv", function (d) {
+        data.set(d.country, d.life);
     })
-  })
-}
+    .await(ready);
 
-const startup = async () => {
-  const data = (await (
-    await window.fetch('public/geolocs.json')
-  ).json()).features.map(type)
+//function getData(d) {
+    //var Row = data_map.get(d.properties.name);
+    //var Val = null;
+    //if (Row) {
+    //    Val = data.get(Row.ShortName);
+    //}
+    //if (Val) {
+        //console.log("Val shortname", Val[0].country);
+        //Val = Val.filter(function (d) {
+            //return d.year == filterValue;
+        //});
+    //}
+    //if (Val) {
+    //    Val = Val[0];
+    //}
+    //return Val;
+//}
 
-  state = {
-    ...state,
-    selected: d3.extent(data, d => d.properties.date)
-  }
-
-  function filterBy ([minMonth, maxMonth]) {
-    const filters = [
-      'all',
-      ['>=', 'dateNumber', +minMonth],
-      ['<=', 'dateNumber', +maxMonth]
-    ]
-    map.setFilter('facebook-roads', filters)
-  }
-
-  const map = new mapboxgl.Map({
-    container: 'content',
-    style: 'mapbox://styles/arnaudmolo/cjfk1zs7bejmr2rnypmmdsy4s',
-    center: [0.380435, 47.530053],
-    zoom: 5.85,
-    bearing: 0,
-    pitch: 0
-  })
-
-  const toRender = render(map)
-  createLines(map, reducer(state, data))
-
-  map.on('zoom', () => {
-    toRender(reducer(state, data))
-  })
-  map.on('drag', () => {
-    toRender(reducer(state, data))
-  })
-
-  renderBrush((mapped) => {
-    state = {
-      ...state,
-      selected: mapped
+function showInfo(d) {
+    var Val = getData(d);
+    if (Val) {
+        d3.select("#info p.country").html(Val.country);
+        d3.select("#info p.life").html(Val.life);
+    } else {
+        d3.select("#info p.country").html(d.properties.name);
+        d3.select("#info p.life").html("no data");
     }
-    toRender(reducer(state, data))
-    filterBy(state.selected)
-  })(data)
-
-  window.addEventListener('resize', event => {
-    toRender(reducer(state, data))
-  })
-
-  toRender(reducer(state, data))
 }
 
-startup()
+function ready(error, topo) {
+    if (error) throw error;
+
+    svg.append("g")
+        .attr("class", "countries")
+        .selectAll("path")
+        .data(topo.features)
+        .enter().append("path")
+        .attr("fill", function (d) {
+            d.life = data.get(d.properties.name) || 0;
+            return colorScale(d.life);
+        })
+        .attr("d", path)
+        .on("click", showInfo)
+        .on("mouseover", function (d) {
+            d3.select(this).moveToFront();
+            d3.select(this).style("stroke", "black");
+        })
+        .on("mouseout", function (d) {
+            d3.select(this).moveToBack();
+            d3.select(this).style("stroke", "white");
+
+        })
+        .append("title")
+        .text("Clique ici")
+}
+
+d3.selection.prototype.moveToFront = function () {
+    return this.each(function () {
+        this.parentNode.appendChild(this);
+    });
+    //d3.selection.prototype.moveToBack = function () {
+        //return this.each(function () {
+            //var firstChild = this.parentNode.firstChild;
+            //if (firstChild) {
+                //this.parentNode.insertBefore(this, firstChild);
+            //}
+        //});
+    //};
+}

@@ -1,17 +1,8 @@
-```
-git clone https://github.com/arnaudmolo/data-cours
-cd data-cours
-npm install
-npm start
-```
+Tentative de datavisualisation sur l'évolution de l'espérance de vie dans le monde
+grâce à un choropleth représentant les disparités selon les pays. 
 
-Lancer un scrapping Facebook ? Rien de plus facile.
-installer les nouvelles librairies nécessaires au scrapping
-``npm install``
+J'ai pris un dataset de la banque mondiale (avec plusieurs années) mais je n'ai pas réussi à représenter la temporalité (brush, dropdown menu, filtre...) Solution de secours : afficher les valeurs pour l'année 2016 en cliquant sur chaque pays mais là aussi, un peu trop compliqué
 
-Placer votre dossier (fb-data) extrait de l'archive envoyer par facebook dans le dossier public
+Si vous pouviez tenir compte du niveau de départ de chacun :)
 
-lancer le serveur de développement : ``npm start``
-Dans une autre fenètre d'invité de commande lancer la commande ``node scrapper``
-
-Article de Mike Bostock sur la génération de viz en ligne de commande : https://medium.com/@mbostock/command-line-cartography-part-1-897aa8f8ca2c
+https://www.wtfclub.net/wp-content/uploads/2017/12/unnamed.jpg
