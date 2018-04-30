@@ -16,6 +16,8 @@ var path = d3.geoPath()
     .projection(projection);
 
 var data = d3.map();
+//var year = "1990" 
+//(récupérer la valeur de l'année définie dans le html)
 var colorScheme = schemeBuPu[8];
 colorScheme.unshift("#eee")
 var colorScale = d3.scaleThreshold()
@@ -49,32 +51,20 @@ d3.queue()
     })
     .await(ready);
 
-//function getData(d) {
-    //var Row = data_map.get(d.properties.name);
-    //var Val = null;
-    //if (Row) {
-    //    Val = data.get(Row.ShortName);
-    //}
-    //if (Val) {
-        //console.log("Val shortname", Val[0].country);
-        //Val = Val.filter(function (d) {
-            //return d.year == filterValue;
-        //});
-    //}
-    //if (Val) {
-    //    Val = Val[0];
-    //}
-    //return Val;
-//}
+function getData(d) {
+    var life = data.get(d.properties.name);
+    life = parseInt(life * 100) / 100;
+    return { country: d.properties.name, life };
+}
 
 function showInfo(d) {
     var Val = getData(d);
-    if (Val) {
+    if (Val && Val.life) {
         d3.select("#info p.country").html(Val.country);
         d3.select("#info p.life").html(Val.life);
     } else {
         d3.select("#info p.country").html(d.properties.name);
-        d3.select("#info p.life").html("no data");
+        d3.select("#info p.life").html("déso, pas de data :D");
     }
 }
 
@@ -92,12 +82,11 @@ function ready(error, topo) {
         })
         .attr("d", path)
         .on("click", showInfo)
-        .on("mouseover", function (d) {
-            d3.select(this).moveToFront();
+        .on("mouseenter", function (d) {
             d3.select(this).style("stroke", "black");
         })
-        .on("mouseout", function (d) {
-            d3.select(this).moveToBack();
+        .on("mouseleave", function (d) {
+            console.log('mouseleave', d)
             d3.select(this).style("stroke", "white");
 
         })
@@ -105,10 +94,10 @@ function ready(error, topo) {
         .text("Clique ici")
 }
 
-d3.selection.prototype.moveToFront = function () {
-    return this.each(function () {
-        this.parentNode.appendChild(this);
-    });
+//d3.selection.prototype.moveToFront = function () {
+    //return this.each(function () {
+        //this.parentNode.appendChild(this);
+    //});
     //d3.selection.prototype.moveToBack = function () {
         //return this.each(function () {
             //var firstChild = this.parentNode.firstChild;
@@ -117,4 +106,3 @@ d3.selection.prototype.moveToFront = function () {
             //}
         //});
     //};
-}
