@@ -10,6 +10,8 @@
 
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
 </head>
 
 <div class="container">
@@ -38,13 +40,23 @@
     font-family: sans-serif;
   }
 
+  #years {
+    position: absolute;
+    top: 120px;
+    right: 550px;
+  }
+
+  option:checked,
+  select:focus::-ms-value,
+  select:focus option:checked:hover {
+    background-color: rgb(147, 112, 219);
+  }
+
   .caption {
     fill: #000;
     text-anchor: start;
     font-weight: bold;
   }
-
-
 </style>
 
 <svg width="960" height="600"></svg>
@@ -58,9 +70,25 @@
   <p class="country">Choisissez un pays</p>
   <p class="life"></p>
 </div>
-  
+
+<select id="years">
+  <option value="Années" selected="selection">Filtre par année</option>
+  <option value="1990">1990</option>
+  <option value="2000">2000</option>
+  <option value="2008">2008</option>
+  <option value="2009">2009</option>
+  <option value="2010">2010</option>
+  <option value="2011">2011</option>
+  <option value="2012">2012</option>
+  <option value="2013">2013</option>
+  <option value="2014">2014</option>
+  <option value="2015">2015</option>
+  <option value="2016">2016</option>
+
+</select>
 <script>
-        </script>
+</script>
 
 </body>
-  </html>
+
+</html>
