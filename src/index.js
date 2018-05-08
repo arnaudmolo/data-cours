@@ -1,13 +1,12 @@
+//Import des packages nécessaires
+
 import './styles.css';
 import * as d3 from 'd3';
-import {
-    schemeBuPu
-} from 'd3-scale-chromatic';
-import {
-    legendColor
-} from 'd3-svg-legend';
+import {schemeBuPu} from 'd3-scale-chromatic';
+import {legendColor} from 'd3-svg-legend';
 
-//console.log('test')
+//Creation du svg + map + projection 
+
 const svg = d3.select("svg"),
     width = +svg.attr("width"),
     height = +svg.attr("height");
@@ -19,9 +18,10 @@ var projection = d3.geoNaturalEarth1()
 var path = d3.geoPath()
     .projection(projection);
 
+// Creation du dégradé de couleurs
+
 const data = d3.map();
-//var year = "1990" 
-//(récupérer la valeur de l'année définie dans le html)
+
 var colorScheme = schemeBuPu[8];
 colorScheme.unshift("#eee")
 var colorScale = d3.scaleThreshold()
@@ -37,6 +37,7 @@ g.append("text")
     .attr("y", -6)
     .text("Légende")
 
+// Légende
 
 const labels = ['No data', '1-29', '30-39', '40-49', '50-59', '60-69', '70-75', '76-80', '> 80'];
 const legend = legendColor()
@@ -47,6 +48,8 @@ const legend = legendColor()
     .scale(colorScale);
 svg.select(".legendThreshold")
     .call(legend);
+
+// Chargement des données 
 
 d3.queue()
     .defer(d3.json, "public/world-110m.geojson")
@@ -64,6 +67,8 @@ function getData(d) {
     };
 }
 
+//Fonction pour afficher les infos lorsque l'on navigue sur la carte
+
 function showInfo(d) {
     var Val = getData(d);
     if (Val && Val.life) {
@@ -74,6 +79,8 @@ function showInfo(d) {
         d3.select("#info p.life").html("pas de data :D");
     }
 }
+
+// Chargement des données, dessin de la map plus ajout des fonctionnalités au passage de la souris
 
 function ready(error, topo) {
     if (error) throw error;
@@ -100,23 +107,15 @@ function ready(error, topo) {
         .append("title")
         .text("Clique ici")
 
-//var years = document.querySelector("#years")
-    //d3.select("#years").on('change', function (d) {
-        //d.life = data.get(d.properties.name) || 0;
-        //return colorScale(d.life);
+// Verification - au changement d'année afficher l'année choisie - pas réussi a aller plus loin pour faire un update de la map
+    d3.select('#years')
+        .on("change", function () {
 
-        //console.log('years');
-    }
+                var year = $(this).val();
+                year = +year;
+                console.log("year:", year)
 
-//d3.selection.prototype.moveToFront = function () {
-//return this.each(function () {
-//this.parentNode.appendChild(this);
-//});
-//d3.selection.prototype.moveToBack = function () {
-//return this.each(function () {
-//var firstChild = this.parentNode.firstChild;
-//if (firstChild) {
-//this.parentNode.insertBefore(this, firstChild);
-//}
-//});
-//};
+               
+        })}
+
+            
